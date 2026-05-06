@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>System Design Case Studies</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Lora:ital,wght@0,400;0,600;1,400&family=Azeret+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0b0b0b;
+  --ink: #f2ede6;
+  --muted: #6b6560;
+  --border: #1e1e1e;
+  --surface: #131313;
+
+  --tw:  #1d9bf0;
+  --ub:  #000000;
+  --ub2: #276ef1;
+  --wa:  #25d366;
+  --yt:  #ff0000;
+  --ig:  #e1306c;
+  --nf:  #e50914;
+
+  --accent: #f2ede6;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Lora', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none; z-index:1000; opacity:0.4;
+}
+
+/* ── NAV ── */
+nav {
+  position:sticky; top:0; z-index:200;
+  background: rgba(11,11,11,0.97);
+  border-bottom: 1px solid var(--border);
+  display:flex; align-items:center; gap:20px;
+  padding: 0 40px; height:52px;
+}
+
+.back-link {
+  font-family:'Azeret Mono',monospace;
+  font-size:11px; color:var(--muted);
+  text-decoration:none; letter-spacing:1px;
+  transition:color .15s;
+}
+.back-link:hover { color:var(--ink); }
+
+.nav-title {
+  font-family:'Anton',sans-serif;
+  font-size:18px; letter-spacing:3px;
+  color:var(--ink); text-transform:uppercase;
+}
+
+.nav-spacer { flex:1; }
+
+.nav-count {
+  font-family:'Azeret Mono',monospace;
+  font-size:11px; color:var(--muted);
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 80px 40px 60px;
+  border-bottom: 1px solid var(--border);
+  position:relative; overflow:hidden;
+}
+
+.hero-bg {
+  position:absolute;
+  top:-40px; right:-60px;
+  font-family:'Anton',sans-serif;
+  font-size:280px; line-height:1;
+  color:rgba(255,255,255,0.02);
+  pointer-events:none;
+  letter-spacing:-10px;
+}
+
+.hero-eyebrow {
+  font-family:'Azeret Mono',monospace;
+  font-size:11px; letter-spacing:3px;
+  color:var(--muted); text-transform:uppercase;
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:12px;
+}
+.hero-eyebrow::before {
+  content:'';
+  display:inline-block;
+  width:32px; height:1px; background:var(--muted);
+}
+
+h1 {
+  font-family:'Anton',sans-serif;
+  font-size:clamp(48px,8vw,96px);
+  line-height:0.9; letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--ink);
+  margin-bottom:24px;
+}
+
+h1 span { color:var(--muted); }
+
+.hero-desc {
+  font-size:16px; line-height:1.8;
+  color:var(--muted); max-width:560px;
+  font-style:italic;
+}
+
+/* ── CASE GRID ── */
+.case-grid {
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px,1fr));
+  gap:1px;
+  background:var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.case-tile {
+  background: var(--bg);
+  padding:32px;
+  cursor:pointer;
+  transition:background .15s;
+  position:relative;
+  overflow:hidden;
+}
+.case-tile:hover { background:var(--surface); }
+
+.case-tile-accent {
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background:var(--tile-color);
+  transform:scaleX(0);
+  transform-origin:left;
+  transition:transform .3s ease;
+}
+.case-tile:hover .case-tile-accent { transform:scaleX(1); }
+
+.tile-num {
+  font-family:'Azeret Mono',monospace;
+  font-size:10px; color:var(--muted);
+  letter-spacing:2px; margin-bottom:16px;
+}
+
+.tile-company {
+  font-family:'Anton',sans-serif;
+  font-size:32px; letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:8px;
+  transition:color .15s;
+}
+.case-tile:hover .tile-company { color:var(--tile-color); }
+
+.tile-subtitle {
+  font-family:'Lora',serif;
+  font-style:italic;
+  font-size:14px; color:var(--muted);
+  margin-bottom:20px;
+  line-height:1.5;
+}
+
+.tile-tags {
+  display:flex; gap:6px; flex-wrap:wrap;
+}
+
+.tile-tag {
+  font-family:'Azeret Mono',monospace;
+  font-size:9px; letter-spacing:1px;
+  padding:3px 8px; border-radius:2px;
+  border:1px solid var(--border);
+  color:var(--muted);
+  text-transform:uppercase;
+}
+
+.tile-arrow {
+  position:absolute;
+  bottom:24px; right:24px;
+  font-size:20px; color:var(--muted);
+  transition:all .2s;
+}
+.case-tile:hover .tile-arrow {
+  color:var(--tile-color);
+  transform:translate(4px,-4px);
+}
+
+/* ── MODAL ── */
+.overlay {
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.92);
+  z-index:500;
+  overflow-y:auto;
+  animation:fadeIn .2s ease;
+}
+.overlay.open { display:block; }
+
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+.modal {
+  max-width:1000px;
+  margin:0 auto;
+  min-height:100vh;
+  background:var(--bg);
+  border-left:1px solid var(--border);
+  border-right:1px solid var(--border);
+  animation:slideUp .3s ease;
+}
+@keyframes slideUp {
+  from{transform:translateY(30px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+
+/* Modal header */
+.modal-header {
+  padding:40px 48px 32px;
+  border-bottom:1px solid var(--border);
+  position:sticky; top:0;
+  background:var(--bg);
+  z-index:10;
+  display:flex; align-items:flex-start; gap:20px;
+}
+
+.modal-close {
+  margin-left:auto;
+  background:none; border:none;
+  color:var(--muted); font-size:24px;
+  cursor:pointer; transition:color .15s;
+  font-family:'Azeret Mono',monospace;
+  flex-shrink:0;
+  padding:4px 8px;
+}
+.modal-close:hover { color:var(--ink); }
+
+.modal-company {
+  font-family:'Anton',sans-serif;
+  font-size:clamp(36px,5vw,64px);
+  letter-spacing:3px; text-transform:uppercase;
+  line-height:1;
+}
+
+.modal-tagline {
+  font-family:'Lora',serif;
+  font-style:italic;
+  font-size:15px; color:var(--muted);
+  margin-top:6px;
+}
+
+/* Step nav */
+.step-nav {
+  display:flex; gap:0;
+  overflow-x:auto; scrollbar-width:none;
+  border-bottom:1px solid var(--border);
+  padding:0 48px;
+}
+.step-nav::-webkit-scrollbar { display:none; }
+
+.step-tab {
+  font-family:'Azeret Mono',monospace;
+  font-size:10px; letter-spacing:2px;
+  padding:14px 20px;
+  border:none; background:transparent;
+  color:var(--muted); cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;
+  white-space:nowrap;
+  transition:all .15s;
+  text-transform:uppercase;
+}
+.step-tab:hover { color:var(--ink); }
+.step-tab.active { color:var(--ink); border-bottom-color:var(--modal-color); }
+
+/* Modal body */
+.modal-body {
+  padding:48px;
+}
+
+.step-content { display:none; }
+.step-content.active { display:block; animation:fadeIn .2s ease; }
+
+/* Section title */
+.sec-title {
+  font-family:'Anton',sans-serif;
+  font-size:13px; letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--modal-color, var(--ink));
+  margin-bottom:16px;
+  display:flex; align-items:center; gap:12px;
+}
+.sec-title::after {
+  content:''; flex:1; height:1px;
+  background:var(--border);
+}
+
+/* Requirements table */
+.req-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px; background:var(--border);
+  margin-bottom:40px;
+  border:1px solid var(--border);
+}
+@media(max-width:600px){ .req-grid{grid-template-columns:1fr;} }
+
+.req-cell {
+  background:var(--bg);
+  padding:20px 24px;
+}
+
+.req-cell-title {
+  font-family:'Azeret Mono',monospace;
+  font-size:9px; letter-spacing:2px;
+  color:var(--muted); text-transform:uppercase;
+  margin-bottom:12px;
+}
+
+.req-item {
+  display:flex; align-items:flex-start; gap:8px;
+  font-size:13px; line-height:1.7; color:var(--ink);
+  margin-bottom:6px;
+}
+.req-item::before {
+  content:'·';
+  color:var(--modal-color,var(--muted));
+  font-size:16px; flex-shrink:0; margin-top:-1px;
+}
+
+/* Scale numbers */
+.scale-strip {
+  display:flex; gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  margin-bottom:40px;
+}
+
+.scale-box {
+  flex:1; background:var(--bg);
+  padding:16px 12px; text-align:center;
+}
+
+.scale-val {
+  font-family:'Anton',sans-serif;
+  font-size:22px; color:var(--ink);
+  line-height:1;
+}
+.scale-val span { font-size:13px; color:var(--muted); }
+
+.scale-lbl {
+  font-family:'Azeret Mono',monospace;
+  font-size:9px; letter-spacing:1px;
+  color:var(--muted); text-transform:uppercase;
+  margin-top:4px;
+}
+
+/* Architecture diagram */
+.arch-wrap {
+  border:1px solid var(--border);
+  background:var(--surface);
+  padding:32px;
+  margin-bottom:40px;
+  overflow-x:auto;
+}
+
+.arch-diagram {
+  min-width:500px;
+}
+
+/* Component boxes in SVG-like layout */
+.arch-boxes {
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+}
+
+.arch-row {
+  display:flex;
+  gap:16px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.arch-box {
+  border:1px solid var(--border);
+  padding:10px 16px;
+  border-radius:3px;
+  background:var(--bg);
+  text-align:center;
+  min-width:110px;
+  position:relative;
+}
+
+.arch-box.highlight {
+  border-color:var(--modal-color,#fff);
+  box-shadow:0 0 12px rgba(255,255,255,0.05);
+}
+
+.arch-box-label {
+  font-family:'Azeret Mono',monospace;
+  font-size:10px; letter-spacing:1px;
+  color:var(--muted); text-transform:uppercase;
+  margin-bottom:4px;
+}
+
+.arch-box-name {
+  font-size:12px; font-weight:600;
+  color:var(--ink);
+}
+
+.arch-arrow {
+  font-family:'Azeret Mono',monospace;
+  font-size:18px; color:var(--muted);
+}
+
+.arch-layer-label {
+  font-family:'Azeret Mono',monospace;
+  font-size:9px; letter-spacing:2px;
+  color:var(--muted); text-transform:uppercase;
+  writing-mode:horizontal-tb;
+  padding:6px 12px;
+  border:1px solid var(--border);
+  border-radius:2px;
+  white-space:nowrap;
+}
+
+/* Decision table */
+.decision-table {
+  width:100%;
+  border-collapse:collapse;
+  margin-bottom:40px;
+  font-size:13px;
+}
+
+.decision-table th {
+  font-family:'Azeret Mono',monospace;
+  font-size:9px; letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--muted);
+  text-align:left;
+  padding:10px 16px;
+  border-bottom:1px solid var(--border);
+  border-top:1px solid var(--border);
+}
+
+.decision-table td {
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  color:var(--ink); line-height:1.6;
+  vertical-align:top;
+}
+
+.decision-table tr:last-child td { border-bottom:none; }
+
+.decision-table td:first-child {
+  font-family:'Azeret Mono',monospace;
+  font-size:11px; color:var(--modal-color,var(--ink));
+  white-space:nowrap;
+}
+
+/* Deep dive points */
+.deep-section {
+  margin-bottom:32px;
+}
+
+.deep-section h3 {
+  font-family:'Lora',serif;
+  font-style:italic;
+  font-size:20px; color:var(--ink);
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--border);
+}
+
+.deep-section p {
+  font-size:14px; line-height:1.9;
+  color:rgba(242,237,230,0.8);
+  margin-bottom:12px;
+}
+
+.deep-section ul {
+  list-style:none;
+  display:flex; flex-direction:column; gap:8px;
+  margin-bottom:12px;
+}
+
+.deep-section ul li {
+  font-size:13px; line-height:1.7;
+  color:rgba(242,237,230,0.75);
+  padding-left:20px; position:relative;
+}
+
+.deep-section ul li::before {
+  content:'→';
+  position:absolute; left:0;
+  color:var(--modal-color,var(--muted));
+  font-family:'Azeret Mono',monospace;
+  font-size:11px;
+}
+
+.code-block {
+  background:#0d0d0d;
+  border:1px solid var(--border);
+  border-left:2px solid var(--modal-color,var(--muted));
+  padding:16px 20px;
+  font-family:'Azeret Mono',monospace;
+  font-size:11px; line-height:1.8;
+  color:#a8d8a8;
+  overflow-x:auto;
+  white-space:pre;
+  margin-bottom:12px;
+  border-radius:2px;
+}
+
+/* Interview questions */
+.interview-grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:12px;
+  margin-bottom:40px;
+}
+@media(max-width:600px){ .interview-grid{grid-template-columns:1fr;} }
+
+.interview-card {
+  border:1px solid var(--border);
+  padding:16px 20px;
+  border-radius:3px;
+  background:var(--surface);
+}
+
+.int-num {
+  font-family:'Azeret Mono',monospace;
+  font-size:9px; letter-spacing:2px;
+  color:var(--modal-color,var(--muted));
+  margin-bottom:8px;
+}
+
+.int-q {
+  font-size:13px; line-height:1.6;
+  color:var(--ink); font-weight:600;
+  margin-bottom:6px;
+}
+
+.int-hint {
+  font-family:'Azeret Mono',monospace;
+  font-size:10px; color:var(--muted);
+  line-height:1.5;
+}
+
+/* Progress dots */
+.step-dots {
+  display:flex; gap:6px;
+  justify-content:center;
+  padding:24px 0;
+  border-top:1px solid var(--border);
+  margin-top:20px;
+}
+
+.step-dot {
+  width:6px; height:6px;
+  border-radius:50%;
+  background:var(--border);
+  cursor:pointer;
+  transition:all .2s;
+}
+.step-dot.active { background:var(--modal-color,var(--ink)); transform:scale(1.4); }
+
+.step-nav-btns {
+  display:flex; gap:12px; justify-content:center;
+  padding-bottom:48px;
+}
+
+.snav-btn {
+  font-family:'Azeret Mono',monospace;
+  font-size:11px; letter-spacing:1px;
+  padding:10px 24px;
+  border:1px solid var(--border);
+  background:transparent; color:var(--muted);
+  cursor:pointer; border-radius:2px;
+  transition:all .15s;
+}
+.snav-btn:hover { border-color:var(--ink); color:var(--ink); }
+.snav-btn.primary {
+  background:var(--modal-color,var(--ink));
+  border-color:var(--modal-color,var(--ink));
+  color:#000;
+}
+.snav-btn.primary:hover { opacity:0.85; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="back-link" href="index.html">← hub</a>
+  <div class="nav-title">System Design · Case Studies</div>
+  <div class="nav-spacer"></div>
+  <div class="nav-count">5 companies · 25 decisions</div>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg">SD</div>
+  <div class="hero-eyebrow">system design interview</div>
+  <h1>Design<br><span>at</span><br>Scale</h1>
+  <p class="hero-desc">Five real-world system design walkthroughs. Requirements → scale estimation → architecture → deep dives → interview questions. The exact format used in FAANG interviews.</p>
+</div>
+
+<div class="case-grid" id="caseGrid"></div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modalHeader">
+      <div>
+        <div class="modal-company" id="modalCompany"></div>
+        <div class="modal-tagline" id="modalTagline"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="step-nav" id="stepNav"></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const CASES = [
+{
+  id:'twitter', company:'Twitter / X', color:'#1d9bf0',
+  tagline:'Design a social network supporting 300M daily active users',
+  tags:['Feed Generation','Fan-out','NoSQL','CDN','WebSockets'],
+  scale:{ users:'300M DAU', tweets:'500M/day', reads:'100B/day', storage:'10TB/day' },
+  steps:[
+    {
+      id:'req', label:'Requirements',
+      functional:['Post tweets (text, images, video)','Follow / unfollow users','Home timeline (tweets from followed users)','Like, retweet, reply','Search tweets','Trending topics','Notifications (real-time)'],
+      nonFunctional:['High availability (99.99%)','Timeline load < 200ms','Eventual consistency acceptable for feed','Read-heavy: 100:1 read/write ratio','Global CDN for media'],
+    },
+    {
+      id:'scale', label:'Scale Estimate',
+      calcs:[
+        { label:'Tweets/sec', val:'~6K', sub:'500M/day ÷ 86,400' },
+        { label:'Timeline reads/sec', val:'~1.2M', sub:'100B/day ÷ 86,400' },
+        { label:'Media storage/yr', val:'~3.6PB', sub:'10TB/day × 365' },
+        { label:'Tweet storage/yr', val:'~18TB', sub:'300 bytes × 500M × 365' },
+        { label:'Bandwidth', val:'~10Gbps', sub:'Media reads peak' },
+        { label:'Cache hit target', val:'99%', sub:'For timeline reads' },
+      ]
+    },
+    {
+      id:'arch', label:'Architecture',
+      layers:[
+        { label:'Client', boxes:['iOS / Android', 'Web Browser'] },
+        { label:'Edge', boxes:['CDN (CloudFront)', 'Load Balancer'] },
+        { label:'API', boxes:['Tweet Service', 'Timeline Service', 'User Service', 'Search Service'] },
+        { label:'Cache', boxes:['Redis Cluster (Timeline)', 'Memcached (User)'] },
+        { label:'Queue', boxes:['Kafka (Fan-out)', 'Kafka (Notifications)'] },
+        { label:'Storage', boxes:['MySQL (Users)', 'Cassandra (Tweets)', 'S3 (Media)', 'Elasticsearch (Search)'] },
+      ],
+      decisions:[
+        { component:'Tweet Storage', choice:'Cassandra', why:'Write-heavy, wide rows per user, auto-sharding by user_id, tunable consistency' },
+        { component:'Timeline Cache', choice:'Redis Sorted Set', why:'score=timestamp, fast O(log n) push/pop, TTL-based eviction' },
+        { component:'Fan-out', choice:'Hybrid Push/Pull', why:'Push for regular users (<1K followers), Pull for celebrities (10M+ followers)' },
+        { component:'Media', choice:'S3 + CloudFront CDN', why:'Offload bandwidth, edge caching, global distribution' },
+        { component:'Search', choice:'Elasticsearch', why:'Full-text inverted index, ranking by recency + engagement score' },
+        { component:'Real-time', choice:'WebSockets via Socket.io', why:'Persistent connection for notifications, <100ms push latency' },
+      ]
+    },
+    {
+      id:'deep', label:'Deep Dives',
+      sections:[
+        {
+          title:'Timeline Generation: Push vs Pull vs Hybrid',
+          body:'The hardest problem in Twitter\'s design. Pure push: on tweet, fan-out to all followers\' Redis caches. Fast reads (O(1)), but celebrities with 10M followers cause write amplification. Pure pull: compute timeline on request from followed users\' tweets. No write amplification but O(n) reads per request. Hybrid: push for users with <1K followers (95% of users), pull+merge for celebrities. Cache timelines as Redis sorted sets (score=tweet_id, member=tweet_json).',
+          code:`-- Fan-out worker (Kafka consumer)\nfor follower_id in get_followers(tweet.user_id):\n    if follower_count(follower_id) < 1000:  # push\n        redis.zadd(f"timeline:{follower_id}",\n                   {tweet_id: timestamp})\n        redis.zremrangebyrank(f"timeline:{follower_id}", 0, -801)  # keep 800\n    # celebrities: skip push, merge at read time`,
+        },
+        {
+          title:'Sharding Strategy for Tweets',
+          body:'Shard by user_id (hash-based). All tweets from one user on same shard — enables efficient user timeline queries. Use consistent hashing so adding shards only moves ~1/n data. Each shard is a Cassandra node with replication factor 3. Hot users (celebrities) are a hotspot — handle by read replicas and caching.',
+          code:`-- Cassandra tweet table\nCREATE TABLE tweets (\n    user_id   BIGINT,\n    tweet_id  TIMEUUID,    -- encodes timestamp\n    content   TEXT,\n    media_url TEXT,\n    PRIMARY KEY (user_id, tweet_id)\n) WITH CLUSTERING ORDER BY (tweet_id DESC)\n  AND default_time_to_live = 7776000;  -- 90 days`,
+        },
+        {
+          title:'Trending Topics',
+          body:'Use a sliding window counter over the last hour. Each tweet is parsed for hashtags and incremented in a Redis sorted set. A background job every 30 seconds aggregates top-K hashtags. For global trending, aggregate across regional Redis clusters. Approximate counting (Count-Min Sketch) reduces memory for long-tail hashtags.',
+          code:`-- Trending: Redis sorted set\nredis.zincrby("trending:2026050610", 1, "#WorldCup")\nredis.expire("trending:2026050610", 3600)\n\n-- Top 10 trending\nredis.zrevrange("trending:2026050610", 0, 9, withscores=True)`,
+        },
+      ]
+    },
+    {
+      id:'interview', label:'Interview Q&A',
+      questions:[
+        { q:'How do you handle the celebrity problem (Kylie Jenner has 400M followers)?', hint:'Hybrid fan-out: pull for celebrities, push for normal users' },
+        { q:'How do you ensure timeline consistency when a user follows many celebrities?', hint:'Merge pull results at read time, cache merged result briefly' },
+        { q:'How would you scale to 1 billion users?', hint:'Multi-region active-active, geo-sharding, regional Kafka clusters' },
+        { q:'How do you implement "who to follow" recommendations?', hint:'Graph DB (Neo4j), friend-of-friend BFS, ML collaborative filtering' },
+        { q:'How do you handle tweet deletion for GDPR?', hint:'Soft delete, async CDC to propagate, CDN purge API' },
+        { q:'How would you design Twitter search?', hint:'Elasticsearch, inverted index on tweet tokens, relevance = recency + engagement' },
+      ]
+    },
+  ]
+},
+{
+  id:'uber', company:'Uber', color:'#276ef1',
+  tagline:'Design a real-time ride matching platform at global scale',
+  tags:['Geospatial','WebSockets','Matching','GPS tracking','Surge pricing'],
+  scale:{ users:'100M DAU', trips:'20M/day', drivers:'5M active', storage:'2TB/day' },
+  steps:[
+    {
+      id:'req', label:'Requirements',
+      functional:['Rider requests a ride with pickup + destination','Match nearby available driver','Real-time GPS tracking of driver','Fare estimation before booking','Driver accepts/rejects ride','Trip completion and payment','Driver/rider ratings','Surge pricing in high-demand areas'],
+      nonFunctional:['Match latency < 1 second','Location updates every 4 seconds','High availability — no downtime means no rides','Eventual consistency ok for ratings/history','Strong consistency for payments'],
+    },
+    {
+      id:'scale', label:'Scale Estimate',
+      calcs:[
+        { label:'Location updates/sec', val:'~1.25M', sub:'5M drivers × 1 update/4s' },
+        { label:'Active trips', val:'~250K', sub:'20M/day ÷ ~80 concurrent' },
+        { label:'Match requests/sec', val:'~230', sub:'20M/day ÷ 86,400' },
+        { label:'GPS data/day', val:'~500GB', sub:'5M drivers × 30B/update × 21,600' },
+        { label:'DB writes/sec', val:'~15K', sub:'Location + trip events' },
+        { label:'WebSocket connections', val:'~5M', sub:'All active drivers' },
+      ]
+    },
+    {
+      id:'arch', label:'Architecture',
+      layers:[
+        { label:'Client', boxes:['Rider App', 'Driver App'] },
+        { label:'Edge', boxes:['API Gateway', 'WebSocket Gateway'] },
+        { label:'Services', boxes:['Location Service', 'Matching Service', 'Trip Service', 'Pricing Service'] },
+        { label:'Geo Index', boxes:['Redis Geo (Driver locations)', 'Quadtree / S2 cells'] },
+        { label:'Queue', boxes:['Kafka (location events)', 'Kafka (trip events)'] },
+        { label:'Storage', boxes:['PostgreSQL (trips/users)', 'Cassandra (location history)', 'Redis (active state)'] },
+      ],
+      decisions:[
+        { component:'Driver Location', choice:'Redis GEOADD + S2 Geometry', why:'O(1) proximity search, 500ms TTL on driver positions' },
+        { component:'Real-time tracking', choice:'WebSockets', why:'Persistent bidirectional — push driver GPS to rider every 4s' },
+        { component:'Matching', choice:'Geohash proximity search', why:'Find all drivers within 2km radius, rank by ETA' },
+        { component:'Trip DB', choice:'PostgreSQL', why:'ACID for payment/billing, complex queries, strong consistency' },
+        { component:'Location history', choice:'Cassandra', why:'Write-heavy time-series, partition by driver_id+date' },
+        { component:'Surge pricing', choice:'Stream processing (Kafka Streams)', why:'Real-time demand/supply ratio per geohash cell, sub-second updates' },
+      ]
+    },
+    {
+      id:'deep', label:'Deep Dives',
+      sections:[
+        {
+          title:'Geospatial Indexing: Finding Nearby Drivers',
+          body:'Use geohashing to divide the map into cells. Each driver\'s position is stored in Redis with GEOADD. On ride request, search GEORADIUS from pickup point with increasing radius (500m → 1km → 2km) until enough drivers found. S2 geometry (Google\'s library) is more precise for hierarchical cell coverage — Uber uses it internally for their H3 library.',
+          code:`-- Driver location update (every 4 seconds)\nredis.geoadd("drivers:active", longitude, latitude, driver_id)\nredis.expire(f"driver:{driver_id}:loc", 30)  # 30s TTL\n\n-- Find drivers within 2km of pickup\ndrivers = redis.georadius("drivers:active",\n    pickup_lng, pickup_lat,\n    radius=2, unit='km',\n    withcoord=True, count=10, sort='ASC')`,
+        },
+        {
+          title:'Matching Algorithm',
+          body:'Matching is not just proximity — it\'s ETA optimization. For each candidate driver: 1) estimate ETA using road network (pre-computed shortest paths), 2) rank by ETA not straight-line distance, 3) send offer to best driver, 4) if no accept in 10s, move to next driver. Use a dispatch state machine in Redis to track each offer. Batch matching (match multiple riders to available drivers simultaneously) reduces total system ETA.',
+          code:`-- Matching state machine\nredis.hset(f"trip:{trip_id}", {\n    "status": "MATCHING",\n    "rider_id": rider_id,\n    "pickup_lat": lat,\n    "pickup_lng": lng\n})\nredis.expire(f"trip:{trip_id}", 300)  # 5 min TTL\n\n-- Offer sent to driver\nredis.setex(f"offer:{trip_id}:{driver_id}", 10, "PENDING")`,
+        },
+        {
+          title:'Surge Pricing: Real-time Supply/Demand',
+          body:'Divide city into geohash cells (precision 6 ≈ 1.2km). Kafka Streams counts: active ride requests per cell (demand) and available drivers per cell (supply) in a 5-minute tumbling window. Surge multiplier = f(demand/supply). The function is tuned so 1.0x when balanced, up to 8.0x in extreme shortage. Published to Redis, API reads surge factor at fare estimation time.',
+          code:`// Kafka Streams surge calculation\nKStream<String, LocationEvent> demand = ...\nKGroupedStream<String, Long> demandByCell = demand\n    .groupBy((k,v) -> toGeohash(v.lat, v.lng, 6))\n    .count(Materialized.as("demand-store"));\n\n// surge = clamp(demand / max(supply, 1), 1.0, 8.0)\ndouble surge = Math.min(8.0, Math.max(1.0,\n    (double) demandCount / Math.max(supplyCount, 1)));`,
+        },
+      ]
+    },
+    {
+      id:'interview', label:'Interview Q&A',
+      questions:[
+        { q:'How do you handle a driver going offline mid-trip?', hint:'Trip state in DB, client retries, assign backup driver after timeout' },
+        { q:'How do you prevent double-booking a driver?', hint:'Optimistic locking, Redis atomic SETNX on driver status' },
+        { q:'How would you scale location updates to 50M drivers?', hint:'Partition Kafka by driver_id, regional processing, hierarchical aggregation' },
+        { q:'How do you compute ETA accurately?', hint:'Pre-compute road graph shortest paths, traffic-weighted edges, ML model on historical data' },
+        { q:'How does payment processing work with distributed transactions?', hint:'Saga pattern: charge auth on match, capture on completion, compensate on cancel' },
+        { q:'How do you handle GPS spoofing by drivers?', hint:'Kalman filtering, speed sanity check, ML anomaly detection on trajectory' },
+      ]
+    },
+  ]
+},
+{
+  id:'whatsapp', company:'WhatsApp', color:'#25d366',
+  tagline:'Design a messaging system for 2 billion users with end-to-end encryption',
+  tags:['E2E Encryption','WebSockets','Message Queue','Offline delivery','Media storage'],
+  scale:{ users:'2B registered', messages:'100B/day', media:'50B/day', online:'500M concurrent' },
+  steps:[
+    {
+      id:'req', label:'Requirements',
+      functional:['1:1 messaging','Group messaging (up to 1024 members)','Message delivery receipts (sent/delivered/read)','Media sharing (images, video, documents)','End-to-end encryption','Online presence / last seen','Voice and video calls','Message history sync across devices'],
+      nonFunctional:['Message delivery < 100ms when recipient online','E2E encryption: server never sees plaintext','Offline message storage up to 30 days','No message loss (at-least-once delivery)','Multi-device support'],
+    },
+    {
+      id:'scale', label:'Scale Estimate',
+      calcs:[
+        { label:'Messages/sec', val:'~1.2M', sub:'100B/day ÷ 86,400' },
+        { label:'Active WebSockets', val:'~500M', sub:'Concurrent online users' },
+        { label:'Media storage/yr', val:'~18PB', sub:'50B media/day × ~1KB avg' },
+        { label:'Message servers', val:'~500K', sub:'1K connections/server' },
+        { label:'DB writes/sec', val:'~2.4M', sub:'Messages + receipts + presence' },
+        { label:'Bandwidth', val:'~50Gbps', sub:'Media upload/download' },
+      ]
+    },
+    {
+      id:'arch', label:'Architecture',
+      layers:[
+        { label:'Client', boxes:['iOS', 'Android', 'Web (Desktop)'] },
+        { label:'Edge', boxes:['Load Balancer', 'WebSocket Servers (500K)'] },
+        { label:'Services', boxes:['Chat Service', 'Group Service', 'Media Service', 'Presence Service'] },
+        { label:'Queue', boxes:['Kafka (message routing)', 'Message Queue (offline)'] },
+        { label:'Storage', boxes:['HBase (messages)', 'S3 (media)', 'Redis (presence/sessions)', 'ZooKeeper (server registry)'] },
+      ],
+      decisions:[
+        { component:'Messaging protocol', choice:'XMPP over WebSocket', why:'Proven protocol, bidirectional, heartbeat keep-alive, fallback to HTTP long-poll' },
+        { component:'Message storage', choice:'HBase', why:'Wide column, sorted by (chat_id, timestamp), 100B rows scale, fast range scans' },
+        { component:'Offline queue', choice:'Dedicated message queue per user', why:'Fan-out to offline users\' queues, retry with exponential backoff' },
+        { component:'Encryption', choice:'Signal Protocol (Double Ratchet)', why:'Forward secrecy, post-compromise recovery, E2E without server seeing plaintext' },
+        { component:'Media', choice:'S3 + CDN + client-side encryption', why:'Client encrypts before upload, server stores ciphertext, recipient decrypts' },
+        { component:'Presence', choice:'Redis with heartbeat TTL', why:'Online = key exists (30s TTL, refreshed by heartbeat), offline = key expired' },
+      ]
+    },
+    {
+      id:'deep', label:'Deep Dives',
+      sections:[
+        {
+          title:'Message Delivery & Receipts (Sent/Delivered/Read)',
+          body:'Three-state delivery: ✓ (sent to server), ✓✓ (delivered to device), ✓✓ blue (read by recipient). Server assigns message_id. Sender gets ACK = ✓. When recipient comes online, server delivers queued messages — send delivery receipt back to server which pushes ✓✓ to sender. When recipient opens chat, client sends read receipt. All receipts go through the same WebSocket infrastructure.',
+          code:`-- Message flow\n1. Alice sends msg → WebSocket → Chat Service\n2. Chat Service stores in HBase, assigns msg_id\n3. Chat Service → ACK to Alice (✓ sent)\n4. If Bob online: push via Bob's WebSocket\n5. Bob's device ACKs → Chat Service → push ✓✓ to Alice\n6. Bob opens chat → read receipt → push ✓✓(blue) to Alice\n7. If Bob offline: store in offline queue (TTL 30 days)`,
+        },
+        {
+          title:'End-to-End Encryption (Signal Protocol)',
+          body:'WhatsApp uses the Signal Protocol (Double Ratchet Algorithm). Each user generates a keypair on device — private key never leaves the device. When Alice messages Bob: Alice fetches Bob\'s public key from the server, encrypts locally, sends ciphertext. Server only stores encrypted blobs. For group messages: each sender encrypts individually for each group member (or uses Sender Keys to reduce overhead for large groups).',
+          code:`-- Key exchange (simplified)\n1. Bob registers: uploads public key bundle to server\n   (identity key + signed prekey + one-time prekeys)\n2. Alice fetches Bob's key bundle from server\n3. Alice runs X3DH key agreement → shared secret\n4. Alice encrypts msg with shared secret using AES-256-GCM\n5. Server receives: header (routing) + ciphertext (opaque)\n6. Bob decrypts with his private key\n-- Server NEVER sees the plaintext`,
+        },
+        {
+          title:'Group Messaging at Scale (1024 members)',
+          body:'Naive approach: server fans out message to all 1024 members — 1024× write amplification. WhatsApp uses Sender Keys: first time Alice sends to a group, she generates a Sender Key and sends it (encrypted) to each member once. Subsequent messages use the Sender Key — server does NOT fan out, each client decrypts with their copy of the Sender Key. Dramatically reduces server load for active groups.',
+          code:`-- Sender Key optimization\n-- First message to group:\nfor member in group_members:\n    encrypted_sender_key = encrypt(sender_key, member.public_key)\n    send_to_server(member, encrypted_sender_key)\n\n-- Subsequent messages:\nmsg_ciphertext = encrypt(message, sender_key)\nsend_one_ciphertext_to_server()  # server stores once\n# Each member fetches and decrypts with their cached sender_key`,
+        },
+      ]
+    },
+    {
+      id:'interview', label:'Interview Q&A',
+      questions:[
+        { q:'How do you deliver messages to an offline user who is offline for 30 days?', hint:'Persistent message queue per user, TTL=30 days, batch deliver on reconnect' },
+        { q:'How does multi-device work with E2E encryption?', hint:'Each device has its own keypair, sender encrypts for each device separately' },
+        { q:'How do you scale to 500M concurrent WebSocket connections?', hint:'Consistent hashing across WebSocket servers, ZooKeeper for server registry' },
+        { q:'How do you handle message ordering in group chats?', hint:'Server-side ordering by receipt timestamp, Lamport clocks for client-side' },
+        { q:'How would you implement message search without decrypting on server?', hint:'Client-side search index (encrypted locally), or sacrifice E2E for search feature' },
+        { q:'How do you handle a user with 1024 group chats of 1024 members each?', hint:'Sender Keys reduce to O(1) delivery per group, async notification batching' },
+      ]
+    },
+  ]
+},
+{
+  id:'youtube', company:'YouTube', color:'#ff0000',
+  tagline:'Design a video streaming platform serving 1 billion hours of video daily',
+  tags:['Video encoding','CDN','Adaptive streaming','Recommendations','View counter'],
+  scale:{ users:'2B MAU', uploads:'500hrs/min', views:'1B hrs/day', storage:'1EB total' },
+  steps:[
+    {
+      id:'req', label:'Requirements',
+      functional:['Upload videos (up to 12 hours)','Transcode to multiple resolutions (360p to 4K)','Stream video with adaptive bitrate','Search videos','Recommend videos (homepage, up next)','Like, comment, subscribe','View count and analytics','Live streaming'],
+      nonFunctional:['Upload processing < 5 minutes for 1hr video','Streaming start < 2 seconds','99.9% availability','Global CDN — serve from edge','View count eventual consistency ok (±1% acceptable)'],
+    },
+    {
+      id:'scale', label:'Scale Estimate',
+      calcs:[
+        { label:'Video uploaded/day', val:'~720K hrs', sub:'500hrs/min × 1440' },
+        { label:'Storage for uploads/day', val:'~108TB', sub:'720K hrs × 150MB/hr avg' },
+        { label:'CDN bandwidth', val:'~100Tbps', sub:'1B hrs/day × avg bitrate' },
+        { label:'Transcoding jobs/day', val:'~10M', sub:'720K videos × ~14 quality levels' },
+        { label:'View events/sec', val:'~11.5K', sub:'1B views/day ÷ 86,400' },
+        { label:'Search queries/sec', val:'~50K', sub:'Estimated search traffic' },
+      ]
+    },
+    {
+      id:'arch', label:'Architecture',
+      layers:[
+        { label:'Client', boxes:['Browser', 'iOS / Android', 'Smart TV'] },
+        { label:'Edge', boxes:['CDN (1000s of PoPs)', 'API Gateway'] },
+        { label:'Upload', boxes:['Upload Service', 'Transcoding Queue', 'FFmpeg Workers'] },
+        { label:'Services', boxes:['Stream Service', 'Search Service', 'Recommendation Engine', 'Metadata Service'] },
+        { label:'Storage', boxes:['GCS / S3 (raw + processed video)', 'Bigtable (view counts)', 'Spanner (metadata)', 'Elasticsearch (search)'] },
+      ],
+      decisions:[
+        { component:'Video storage', choice:'GCS/S3 with multi-region', why:'Exabyte scale, 99.999999999% durability, CDN origin integration' },
+        { component:'Transcoding', choice:'Distributed FFmpeg workers', why:'Parallelize by splitting video into chunks, transcode concurrently, stitch output' },
+        { component:'Streaming', choice:'DASH / HLS adaptive bitrate', why:'Client switches quality based on bandwidth, no buffering, starts with low quality' },
+        { component:'View counts', choice:'Bigtable + stream processing', why:'Write-heavy, eventually consistent, Kafka Streams aggregates per-minute batches' },
+        { component:'Recommendations', choice:'Two-tower neural network', why:'Candidate generation (millions → hundreds) + ranking (hundreds → dozens)' },
+        { component:'Search', choice:'Elasticsearch + ML ranking', why:'Inverted index on title/description, ML re-ranks by engagement signals' },
+      ]
+    },
+    {
+      id:'deep', label:'Deep Dives',
+      sections:[
+        {
+          title:'Video Transcoding Pipeline',
+          body:'Raw upload → S3. Transcoding pipeline: split video into 10-second GOP chunks. Each chunk transcoded independently by a worker pool to all target resolutions (360p, 480p, 720p, 1080p, 1440p, 2160p/4K) and codecs (H.264, H.265/HEVC, VP9, AV1). Output chunks uploaded to S3. Manifest file (DASH .mpd or HLS .m3u8) generated listing all quality levels and chunk URLs. CDN pre-warms popular content, cold content served from origin.',
+          code:`# Transcoding worker (simplified)\ndef transcode_chunk(chunk_url, resolution, codec):\n    input = download(chunk_url)\n    output = ffmpeg.input(input)\\\n        .output(f'output_{resolution}.mp4',\n                vcodec=codec,\n                s=RESOLUTIONS[resolution],\n                b=BITRATES[resolution])\\\n        .run()\n    upload(output, s3_key)\n    notify_completion(chunk_id, resolution)`,
+        },
+        {
+          title:'Adaptive Bitrate Streaming (DASH/HLS)',
+          body:'Video is split into 2-10 second segments. A manifest file lists all segments at all quality levels. The client\'s ABR algorithm monitors buffer level and download speed, selecting the highest quality the network can sustain without buffering. Initial load: start at lowest quality for fast start, ramp up. Rebuffering event: drop quality. YouTube uses a throughput-based ABR with a buffer-based fallback.',
+          code:`# HLS manifest (m3u8) structure\n#EXTM3U\n#EXT-X-VERSION:3\n\n# Low quality stream\n#EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=640x360\nhttps://cdn.yt.com/v/abc123/360p/manifest.m3u8\n\n# Medium quality\n#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1280x720\nhttps://cdn.yt.com/v/abc123/720p/manifest.m3u8\n\n# 4K stream\n#EXT-X-STREAM-INF:BANDWIDTH=20000000,RESOLUTION=3840x2160\nhttps://cdn.yt.com/v/abc123/4k/manifest.m3u8`,
+        },
+        {
+          title:'View Counter: Approximate Counting at Scale',
+          body:'11,500 view events per second. Naive: increment a DB counter per view — write bottleneck and hot rows. Solution: write view events to Kafka. Stream processor (Flink) aggregates in 1-minute tumbling windows, writes batch increments to Bigtable. Read path: Bigtable serves exact counts for analytics, Redis cache serves approximate count for display (updated every 30 seconds). For viral videos: hierarchical aggregation — regional counters merge to global.',
+          code:`// Kafka → Flink → Bigtable\nDataStream<ViewEvent> views = kafkaSource...\n\nviews\n  .keyBy(ViewEvent::getVideoId)\n  .window(TumblingProcessingTimeWindows.of(Time.minutes(1)))\n  .aggregate(new CountAggregator())\n  .addSink(bigtableSink);  // write batch increments\n\n// Bigtable row: video_id → count_total, count_1h, count_24h`,
+        },
+      ]
+    },
+    {
+      id:'interview', label:'Interview Q&A',
+      questions:[
+        { q:'How do you handle a viral video that gets 10M views in 1 minute?', hint:'CDN absorbs bandwidth, view counter batching via Kafka, pre-warm CDN nodes' },
+        { q:'How do you resume video playback across devices?', hint:'Store playback position per (user_id, video_id) in DB, sync on play/pause events' },
+        { q:'How would you design the recommendation system?', hint:'Two-tower: candidate generation (collaborative filtering) + ranking (engagement signals)' },
+        { q:'How do you handle copyright infringement detection?', hint:'Content ID: hash fingerprint of uploaded video, compare against reference database' },
+        { q:'How do you reduce transcoding costs?', hint:'Encode-on-demand for rare videos, pre-encode only popular content, perceptual quality optimization' },
+        { q:'How does live streaming differ from on-demand?', hint:'No pre-transcoding, lower latency protocol (RTMP → HLS with 2-6s segments), no CDN pre-warming' },
+      ]
+    },
+  ]
+},
+{
+  id:'instagram', company:'Instagram', color:'#e1306c',
+  tagline:'Design a photo sharing platform with news feed for 1 billion users',
+  tags:['News Feed','Photo storage','CDN','Graph DB','Stories'],
+  scale:{ users:'1B MAU', photos:'100M/day', feedReads:'10B/day', storage:'500PB total' },
+  steps:[
+    {
+      id:'req', label:'Requirements',
+      functional:['Upload and share photos/videos','Follow users','News feed (chronological + ranked)','Stories (24-hour expiry)','Likes, comments, DMs','Explore / discover','Search by hashtag and user','Notifications'],
+      nonFunctional:['Feed load < 300ms','Photo upload processing < 2s','High availability (99.99%)','Eventual consistency for feed ok','Photos never lost (multi-region replication)'],
+    },
+    {
+      id:'scale', label:'Scale Estimate',
+      calcs:[
+        { label:'Photos/sec', val:'~1,160', sub:'100M/day ÷ 86,400' },
+        { label:'Feed reads/sec', val:'~115K', sub:'10B/day ÷ 86,400' },
+        { label:'Photo storage/yr', val:'~90PB', sub:'100M/day × 2.5MB × 365' },
+        { label:'Feed cache entries', val:'~200B', sub:'1B users × 200 feed items' },
+        { label:'Stories expiry jobs/day', val:'~100M', sub:'All stories expire at 24h' },
+        { label:'CDN bandwidth', val:'~50Tbps', sub:'Photo/video delivery peak' },
+      ]
+    },
+    {
+      id:'arch', label:'Architecture',
+      layers:[
+        { label:'Client', boxes:['iOS', 'Android'] },
+        { label:'Edge', boxes:['CDN (photos/videos)', 'API Gateway', 'Load Balancer'] },
+        { label:'Services', boxes:['Feed Service', 'Photo Service', 'Stories Service', 'User Service', 'Notification Service'] },
+        { label:'Cache', boxes:['Redis (feed cache)', 'Memcached (photo metadata)'] },
+        { label:'Queue', boxes:['Kafka (feed fan-out)', 'Kafka (notifications)'] },
+        { label:'Storage', boxes:['Cassandra (feed)', 'S3 (photos)', 'PostgreSQL (users/graph)', 'Elasticsearch (search)'] },
+      ],
+      decisions:[
+        { component:'Photo storage', choice:'S3 + Haystack (Meta)', why:'Haystack: custom blob store for small files, reduces filesystem metadata overhead' },
+        { component:'Feed generation', choice:'Pre-computed + ranked', why:'Async fan-out on post, store in Redis sorted set, ML ranking at read time' },
+        { component:'Graph (follows)', choice:'PostgreSQL + graph cache', why:'Follow graph fits in memory for hot users, Postgres for durable store' },
+        { component:'Stories', choice:'Cassandra + TTL', why:'Natural expiry with Cassandra TTL, partition by (user_id, date)' },
+        { component:'Ranking', choice:'ML model (EdgeRank-like)', why:'Signals: recency, engagement rate, relationship strength, content type affinity' },
+        { component:'Notifications', choice:'Kafka + push (APNs/FCM)', why:'Fan-out to Kafka, dedup, batch, push via APNs (iOS) or FCM (Android)' },
+      ]
+    },
+    {
+      id:'deep', label:'Deep Dives',
+      sections:[
+        {
+          title:'News Feed: Pre-computed vs On-demand',
+          body:'Pre-computation (push model): when a user posts, fan-out to all followers\' feed caches. Fast reads. Problem: celebrity with 100M followers = 100M writes per post. Solution: hybrid. Regular users (<1M followers): push. Celebrities: pull at read time and merge. Feed is a Redis sorted set (score=timestamp × engagement_multiplier) per user. ML ranking model re-ranks the top 500 cached posts at serve time to personalize order.',
+          code:`-- Feed insertion (fan-out worker)\nfor follower_id in get_followers(post.user_id, limit=1M):\n    feed_key = f"feed:{follower_id}"\n    redis.zadd(feed_key, {post.id: score(post)})\n    redis.zremrangebyrank(feed_key, 0, -501)  # keep 500\n\n-- Feed read\nposts = redis.zrevrange(f"feed:{user_id}", 0, 49)  # top 50\nposts += pull_celebrity_posts(user_id)  # merge celebrity posts\nposts = ml_rank(posts, user_id)  # personalized ranking`,
+        },
+        {
+          title:'Photo Upload & Processing Pipeline',
+          body:'Client uploads original photo to S3 via pre-signed URL (bypasses app servers). Upload complete event → Kafka → image processing workers. Workers generate: thumbnail (150px), low-res preview (480px), standard (1080px), high-res (2160px). Blurhash placeholder computed for instant display. EXIF data stripped for privacy. CDN cache-busted with versioned URLs. Processing p95 < 2 seconds.',
+          code:`# Image processing worker\ndef process_photo(s3_key):\n    img = download(s3_key)\n    img = strip_exif(img)          # privacy\n    blur_hash = compute_blurhash(img)  # placeholder\n\n    for size, dims in SIZES.items():\n        resized = img.resize(dims, LANCZOS)\n        upload(resized, f"{s3_key}/{size}.jpg")\n\n    update_metadata(s3_key, blur_hash, status='READY')\n    notify_followers(photo_id)     # trigger fan-out`,
+        },
+        {
+          title:'Stories: 24-Hour Expiry at Scale',
+          body:'Stories are stored in Cassandra with TTL=86400 seconds (24 hours). Cassandra handles expiry natively — no cron job needed. Story views are tracked in a separate Cassandra table (story_id, viewer_id, viewed_at) with same TTL. "Seen" ring around avatar computed by checking if (story_id, viewer_id) exists. Story feed is pre-computed list of friends with active stories, updated on new story creation and expiry.',
+          code:`-- Cassandra stories table\nCREATE TABLE stories (\n    user_id    BIGINT,\n    story_id   TIMEUUID,\n    media_url  TEXT,\n    created_at TIMESTAMP,\n    PRIMARY KEY (user_id, story_id)\n) WITH default_time_to_live = 86400;  -- 24 hours\n\n-- Story views\nCREATE TABLE story_views (\n    story_id   UUID,\n    viewer_id  BIGINT,\n    viewed_at  TIMESTAMP,\n    PRIMARY KEY (story_id, viewer_id)\n) WITH default_time_to_live = 86400;`,
+        },
+      ]
+    },
+    {
+      id:'interview', label:'Interview Q&A',
+      questions:[
+        { q:'How do you generate a personalized feed for a new user (cold start)?', hint:'Content-based filtering on interests, follow suggestions, popular content in region' },
+        { q:'How do you handle a user who follows 10,000 accounts?', hint:'Cap pull-based reads, async pre-computation, pagination with cursor' },
+        { q:'How do you implement Explore / discover page?', hint:'Collaborative filtering, trending hashtags, engagement signals, regional popularity' },
+        { q:'How do you track story views without missing any?', hint:'Cassandra with TTL matching story expiry, eventual consistency ok for view counts' },
+        { q:'How would you detect spam/inappropriate content at upload time?', hint:'ML classifier in processing pipeline, perceptual hash against known bad content DB' },
+        { q:'How do you ensure photos are never lost?', hint:'S3 multi-region replication, cross-region backup, checksums on write' },
+      ]
+    },
+  ]
+},
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let activeCase = null;
+let activeStep = 0;
+
+// ─────────────────────────────────────────────
+// BUILD GRID
+// ─────────────────────────────────────────────
+function init() {
+  const grid = document.getElementById('caseGrid');
+  CASES.forEach((c, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'case-tile';
+    tile.style.setProperty('--tile-color', c.color);
+    tile.innerHTML = `
+      <div class="case-tile-accent"></div>
+      <div class="tile-num">// CASE ${String(i+1).padStart(2,'0')}</div>
+      <div class="tile-company" style="color:var(--ink)">${c.company}</div>
+      <div class="tile-subtitle">${c.tagline}</div>
+      <div class="tile-tags">${c.tags.map(t=>`<span class="tile-tag">${t}</span>`).join('')}</div>
+      <div class="tile-arrow">↗</div>
+    `;
+    tile.onclick = () => openCase(c);
+    grid.appendChild(tile);
+  });
+}
+
+// ─────────────────────────────────────────────
+// OPEN CASE
+// ─────────────────────────────────────────────
+function openCase(c) {
+  activeCase = c;
+  activeStep = 0;
+  document.getElementById('modal').style.setProperty('--modal-color', c.color);
+  document.getElementById('modalCompany').textContent = c.company;
+  document.getElementById('modalCompany').style.color = c.color;
+  document.getElementById('modalTagline').textContent = c.tagline;
+
+  // Build step nav
+  const nav = document.getElementById('stepNav');
+  nav.innerHTML = '';
+  c.steps.forEach((s, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'step-tab' + (i===0?' active':'');
+    btn.textContent = s.label;
+    btn.onclick = () => goToStep(i);
+    nav.appendChild(btn);
+  });
+
+  renderStep(c, 0);
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function goToStep(idx) {
+  activeStep = idx;
+  document.querySelectorAll('.step-tab').forEach((b,i) => b.classList.toggle('active', i===idx));
+  renderStep(activeCase, idx);
+  document.getElementById('modal').scrollTo({top:0, behavior:'smooth'});
+}
+
+function renderStep(c, stepIdx) {
+  const step = c.steps[stepIdx];
+  const body = document.getElementById('modalBody');
+  body.innerHTML = '';
+
+  const color = c.color;
+  let html = '';
+
+  if(step.id === 'req') {
+    html = `
+      <div class="sec-title">Functional Requirements</div>
+      <div class="req-grid">
+        <div class="req-cell">
+          <div class="req-cell-title">Must Have</div>
+          ${step.functional.map(f=>`<div class="req-item">${f}</div>`).join('')}
+        </div>
+        <div class="req-cell">
+          <div class="req-cell-title">Non-Functional</div>
+          ${step.nonFunctional.map(f=>`<div class="req-item">${f}</div>`).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  else if(step.id === 'scale') {
+    html = `
+      <div class="sec-title">Back-of-Envelope Estimates</div>
+      <div class="scale-strip">
+        ${Object.entries(c.scale).map(([k,v])=>`
+          <div class="scale-box">
+            <div class="scale-val">${v}</div>
+            <div class="scale-lbl">${k}</div>
+          </div>`).join('')}
+      </div>
+      <div class="sec-title">Derived Calculations</div>
+      <div class="scale-strip" style="flex-wrap:wrap">
+        ${step.calcs.map(calc=>`
+          <div class="scale-box" style="flex:0 0 calc(33% - 1px);min-width:130px">
+            <div class="scale-val">${calc.val}</div>
+            <div class="scale-lbl">${calc.label}</div>
+            <div style="font-family:'Azeret Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px">${calc.sub}</div>
+          </div>`).join('')}
+      </div>
+    `;
+  }
+
+  else if(step.id === 'arch') {
+    html = `
+      <div class="sec-title">System Architecture</div>
+      <div class="arch-wrap">
+        <div class="arch-boxes">
+          ${step.layers.map(layer=>`
+            <div class="arch-row">
+              <div class="arch-layer-label">${layer.label}</div>
+              ${layer.boxes.map(b=>`
+                <div class="arch-box ${layer.label==='Services'||layer.label==='API'?'highlight':''}">
+                  <div class="arch-box-name">${b}</div>
+                </div>`).join('')}
+            </div>`).join('<div class="arch-row"><div class="arch-arrow" style="transform:rotate(90deg)">↓</div></div>')}
+        </div>
+      </div>
+      <div class="sec-title">Key Design Decisions</div>
+      <table class="decision-table">
+        <thead><tr><th>Component</th><th>Choice</th><th>Rationale</th></tr></thead>
+        <tbody>
+          ${step.decisions.map(d=>`
+            <tr>
+              <td>${d.component}</td>
+              <td style="font-family:'Azeret Mono',monospace;font-size:11px;color:${color}">${d.choice}</td>
+              <td style="color:rgba(242,237,230,0.7)">${d.why}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  else if(step.id === 'deep') {
+    html = `
+      <div class="sec-title">Deep Dive</div>
+      ${step.sections.map(s=>`
+        <div class="deep-section">
+          <h3>${s.title}</h3>
+          <p>${s.body}</p>
+          ${s.code ? `<div class="code-block">${s.code}</div>` : ''}
+        </div>`).join('')}
+    `;
+  }
+
+  else if(step.id === 'interview') {
+    html = `
+      <div class="sec-title">Interview Questions</div>
+      <div class="interview-grid">
+        ${step.questions.map((q,i)=>`
+          <div class="interview-card">
+            <div class="int-num">Q${String(i+1).padStart(2,'0')}</div>
+            <div class="int-q">${q.q}</div>
+            <div class="int-hint">💡 ${q.hint}</div>
+          </div>`).join('')}
+      </div>
+    `;
+  }
+
+  // Step nav dots + buttons
+  html += `
+    <div class="step-dots">
+      ${c.steps.map((_,i)=>`<div class="step-dot ${i===stepIdx?'active':''}" onclick="goToStep(${i})"></div>`).join('')}
+    </div>
+    <div class="step-nav-btns">
+      ${stepIdx > 0 ? `<button class="snav-btn" onclick="goToStep(${stepIdx-1})">← ${c.steps[stepIdx-1].label}</button>` : '<div></div>'}
+      ${stepIdx < c.steps.length-1 ? `<button class="snav-btn primary" onclick="goToStep(${stepIdx+1})">→ ${c.steps[stepIdx+1].label}</button>` : ''}
+    </div>
+  `;
+
+  body.innerHTML = html;
+}
+
+function closeModal() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.getElementById('overlay').addEventListener('click', e => {
+  if(e.target === document.getElementById('overlay')) closeModal();
+});
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeModal();
+  if(!activeCase) return;
+  if(e.key === 'ArrowRight' && activeStep < activeCase.steps.length-1) goToStep(activeStep+1);
+  if(e.key === 'ArrowLeft' && activeStep > 0) goToStep(activeStep-1);
+});
+
+init();
+</script>
+</body>
+</html>

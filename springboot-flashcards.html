@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spring Boot Interview Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Fira+Code:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #faf7f2;
+  --surface: #f2ede4;
+  --card-bg: #1c1f2e;
+  --card-back: #ffffff;
+  --ink: #1c1f2e;
+  --muted: #7a7468;
+  --faint: #c4bdb4;
+  --border: #e2dbd0;
+
+  --spring: #6db33f;
+  --java:   #e76f00;
+  --sec:    #dc3545;
+  --jpa:    #0d6efd;
+  --aop:    #6f42c1;
+  --test:   #20c997;
+  --web:    #fd7e14;
+  --data:   #0dcaf0;
+
+  --radius: 6px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* Subtle dot grid */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events:none; z-index:0;
+}
+
+/* ── NAV ── */
+nav {
+  position:sticky; top:0; z-index:200;
+  background: rgba(250,247,242,0.96);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid var(--ink);
+  display:flex; align-items:center; gap:20px;
+  padding: 0 36px;
+  height:54px;
+}
+
+.back-link {
+  font-family:'Fira Code',monospace;
+  font-size:11px; color:var(--muted);
+  text-decoration:none; letter-spacing:1px;
+  transition:color .15s;
+}
+.back-link:hover { color:var(--spring); }
+
+.nav-logo {
+  font-family:'Playfair Display',serif;
+  font-size:20px; font-weight:900;
+  color:var(--ink);
+}
+.nav-logo sup {
+  font-family:'Fira Code',monospace;
+  font-size:10px; color:var(--spring);
+  vertical-align:super;
+}
+
+.nav-spacer { flex:1; }
+
+.nav-stats {
+  display:flex; gap:20px;
+}
+.nav-stat {
+  font-family:'Fira Code',monospace;
+  font-size:11px; color:var(--muted);
+  display:flex; align-items:center; gap:6px;
+}
+.nav-stat-val { color:var(--ink); font-weight:500; }
+
+/* ── HERO ── */
+.hero {
+  position:relative; z-index:1;
+  padding: 52px 36px 40px;
+  display:grid;
+  grid-template-columns: 1fr 360px;
+  gap: 48px;
+  border-bottom: 1px solid var(--border);
+}
+@media(max-width:800px){ .hero{grid-template-columns:1fr;} }
+
+.hero-tag {
+  font-family:'Fira Code',monospace;
+  font-size:11px; letter-spacing:3px;
+  color:var(--spring); margin-bottom:16px;
+  text-transform:uppercase;
+}
+
+h1 {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(36px,5vw,64px);
+  font-weight:900; line-height:1.0;
+  color:var(--ink); margin-bottom:18px;
+}
+h1 em { font-style:italic; color:var(--spring); }
+
+.hero-desc {
+  font-size:15px; line-height:1.8;
+  color:var(--muted); max-width:480px;
+}
+
+/* Category cards in hero */
+.cat-grid {
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:8px;
+}
+
+.cat-card {
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  cursor:pointer;
+  transition:all .15s;
+  background:white;
+  border-left:3px solid var(--cat-color, var(--spring));
+}
+.cat-card:hover {
+  transform:translateY(-2px);
+  box-shadow:0 4px 16px rgba(0,0,0,0.08);
+}
+.cat-card.active {
+  background:var(--cat-color, var(--spring));
+  border-color:var(--cat-color, var(--spring));
+}
+.cat-card.active .cc-name,
+.cat-card.active .cc-count { color:white; }
+
+.cc-name {
+  font-size:12px; font-weight:700;
+  color:var(--ink); margin-bottom:2px;
+}
+.cc-count {
+  font-family:'Fira Code',monospace;
+  font-size:10px; color:var(--muted);
+}
+
+/* ── PROGRESS BAR ROW ── */
+.progress-row {
+  position:relative; z-index:1;
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px,1fr));
+  border-bottom:1px solid var(--border);
+}
+
+.prog-cell {
+  padding:14px 20px;
+  border-right:1px solid var(--border);
+  cursor:pointer;
+  transition:background .15s;
+}
+.prog-cell:last-child { border-right:none; }
+.prog-cell:hover { background:var(--surface); }
+.prog-cell.active { background:var(--surface); }
+
+.prog-label {
+  font-family:'Fira Code',monospace;
+  font-size:9px; letter-spacing:1px;
+  color:var(--muted); text-transform:uppercase;
+  margin-bottom:6px;
+}
+
+.prog-bar-wrap {
+  height:3px; background:var(--border);
+  border-radius:2px; overflow:hidden;
+  margin-bottom:4px;
+}
+.prog-bar-fill {
+  height:100%; border-radius:2px;
+  transition:width .5s ease;
+}
+
+.prog-nums {
+  font-family:'Fira Code',monospace;
+  font-size:10px; color:var(--muted);
+}
+
+/* ── MODES ── */
+.mode-bar {
+  position:relative; z-index:1;
+  display:flex; align-items:center; gap:0;
+  padding:0 36px;
+  border-bottom:2px solid var(--ink);
+  overflow-x:auto; scrollbar-width:none;
+}
+.mode-bar::-webkit-scrollbar { display:none; }
+
+.mode-btn {
+  font-family:'Fira Code',monospace;
+  font-size:11px; letter-spacing:1px;
+  padding:13px 20px;
+  border:none; background:transparent;
+  color:var(--muted); cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-2px;
+  white-space:nowrap;
+  transition:all .15s;
+}
+.mode-btn:hover { color:var(--ink); }
+.mode-btn.active {
+  color:var(--ink);
+  border-bottom-color:var(--spring);
+}
+
+.mode-spacer { flex:1; }
+
+.shuffle-btn {
+  font-family:'Fira Code',monospace;
+  font-size:10px; letter-spacing:1px;
+  padding:8px 16px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  background:white; color:var(--muted);
+  cursor:pointer; transition:all .15s;
+}
+.shuffle-btn:hover { border-color:var(--spring); color:var(--spring); }
+
+/* ── STUDY LAYOUT ── */
+.study-wrap {
+  position:relative; z-index:1;
+  display:grid;
+  grid-template-columns: 280px 1fr;
+  min-height:calc(100vh - 200px);
+}
+@media(max-width:900px){ .study-wrap{grid-template-columns:1fr;} }
+
+/* ── Q LIST (sidebar) ── */
+.q-list {
+  border-right:1px solid var(--border);
+  overflow-y:auto;
+  height:calc(100vh - 200px);
+  position:sticky; top:54px;
+}
+
+.q-item {
+  padding:12px 16px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+  transition:background .12s;
+  display:flex; gap:10px; align-items:flex-start;
+}
+.q-item:hover { background:var(--surface); }
+.q-item.active { background:var(--ink); }
+.q-item.active .q-item-text,
+.q-item.active .q-item-cat { color:white; }
+.q-item.active .q-item-num { color:rgba(255,255,255,0.4); }
+.q-item.known { border-left:3px solid var(--spring); }
+
+.q-item-num {
+  font-family:'Fira Code',monospace;
+  font-size:10px; color:var(--faint);
+  min-width:24px; padding-top:2px;
+}
+.q-item-content { flex:1; }
+.q-item-text {
+  font-size:12px; font-weight:600;
+  color:var(--ink); line-height:1.4;
+  margin-bottom:4px;
+}
+.q-item-cat {
+  font-family:'Fira Code',monospace;
+  font-size:9px; color:var(--muted);
+  letter-spacing:1px; text-transform:uppercase;
+}
+
+.q-done-badge {
+  width:16px; height:16px;
+  border-radius:50%;
+  background:var(--spring);
+  color:white; font-size:9px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; margin-top:2px;
+}
+
+/* ── CARD STAGE ── */
+.card-stage {
+  padding:40px 48px;
+  display:flex; flex-direction:column;
+  align-items:center; gap:28px;
+}
+@media(max-width:700px){ .card-stage{padding:24px 16px;} }
+
+/* score row */
+.score-strip {
+  display:flex; gap:16px;
+  width:100%; max-width:700px;
+}
+.score-pill {
+  flex:1; padding:10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  text-align:center;
+  background:white;
+}
+.score-n {
+  font-family:'Playfair Display',serif;
+  font-size:24px; font-weight:700;
+  color:var(--ink); line-height:1;
+}
+.score-l {
+  font-family:'Fira Code',monospace;
+  font-size:9px; color:var(--muted);
+  letter-spacing:1px; margin-top:2px;
+}
+
+/* THE CARD */
+.flashcard-wrap {
+  width:100%; max-width:700px;
+  perspective:1600px;
+}
+
+.flashcard {
+  width:100%; min-height:440px;
+  position:relative;
+  transform-style:preserve-3d;
+  transition:transform 0.55s cubic-bezier(.4,0,.2,1);
+  cursor:pointer;
+}
+.flashcard.flipped { transform:rotateY(180deg); }
+
+.face {
+  position:absolute; inset:0; min-height:440px;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  border-radius:var(--radius);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+}
+
+/* FRONT face */
+.face-front {
+  background:var(--card-bg);
+  border:2px solid rgba(255,255,255,0.06);
+}
+
+.front-top {
+  padding:20px 28px 16px;
+  display:flex; align-items:center; gap:12px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+
+.front-cat-badge {
+  font-family:'Fira Code',monospace;
+  font-size:10px; letter-spacing:2px;
+  padding:4px 10px; border-radius:3px;
+  text-transform:uppercase; border:1px solid;
+}
+
+.front-num {
+  font-family:'Fira Code',monospace;
+  font-size:10px; color:rgba(255,255,255,0.2);
+  margin-left:auto;
+}
+
+.front-body {
+  flex:1;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:36px 40px;
+  text-align:center; gap:16px;
+}
+
+.front-label {
+  font-family:'Fira Code',monospace;
+  font-size:10px; letter-spacing:2px;
+  color:rgba(255,255,255,0.25);
+  text-transform:uppercase;
+}
+
+.front-question {
+  font-family:'Playfair Display',serif;
+  font-size:clamp(18px,2.5vw,24px);
+  font-weight:700; line-height:1.35;
+  color:#f0f4ff;
+}
+
+.front-hint {
+  font-family:'Fira Code',monospace;
+  font-size:11px; color:rgba(255,255,255,0.2);
+  margin-top:4px;
+}
+
+.front-flip-cue {
+  padding:14px;
+  border-top:1px solid rgba(255,255,255,0.05);
+  text-align:center;
+  font-family:'Fira Code',monospace;
+  font-size:10px; color:rgba(255,255,255,0.18);
+  letter-spacing:1px;
+}
+
+/* BACK face */
+.face-back {
+  transform:rotateY(180deg);
+  background:var(--card-back);
+  border:2px solid var(--border);
+}
+
+.back-top {
+  padding:16px 24px;
+  border-bottom:2px solid var(--ink);
+  display:flex; align-items:center; gap:12px;
+}
+.back-top-title {
+  font-family:'Playfair Display',serif;
+  font-size:16px; font-weight:700;
+  color:var(--ink); flex:1;
+}
+.back-diff {
+  font-family:'Fira Code',monospace;
+  font-size:9px; letter-spacing:1px;
+  padding:3px 8px; border-radius:3px;
+  text-transform:uppercase;
+}
+.diff-core { background:rgba(109,179,63,0.12); color:var(--spring); border:1px solid rgba(109,179,63,0.3); }
+.diff-deep { background:rgba(231,111,0,0.12);  color:var(--java);   border:1px solid rgba(231,111,0,0.3); }
+.diff-arch { background:rgba(220,53,69,0.12);  color:var(--sec);    border:1px solid rgba(220,53,69,0.3); }
+
+.back-body {
+  flex:1; padding:20px 24px;
+  overflow-y:auto;
+  display:flex; flex-direction:column; gap:16px;
+}
+
+.back-section h4 {
+  font-family:'Fira Code',monospace;
+  font-size:9px; letter-spacing:2px;
+  color:var(--faint); text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.back-section p {
+  font-size:13px; line-height:1.8;
+  color:var(--ink);
+}
+
+.back-code {
+  background:#1c1f2e;
+  color:#a8d8a8;
+  font-family:'Fira Code',monospace;
+  font-size:11px; line-height:1.7;
+  padding:14px 16px;
+  border-radius:4px;
+  overflow-x:auto;
+  white-space:pre;
+  margin-top:4px;
+}
+
+.back-list {
+  list-style:none;
+  display:flex; flex-direction:column; gap:4px;
+}
+.back-list li {
+  font-size:13px; line-height:1.7;
+  color:var(--ink);
+  padding-left:18px; position:relative;
+}
+.back-list li::before {
+  content:'▸';
+  position:absolute; left:0;
+  color:var(--spring);
+}
+
+.gotcha-box {
+  background:rgba(220,53,69,0.06);
+  border:1px solid rgba(220,53,69,0.2);
+  border-left:3px solid var(--sec);
+  padding:10px 14px;
+  border-radius:var(--radius);
+}
+.gotcha-box .gb-label {
+  font-family:'Fira Code',monospace;
+  font-size:9px; letter-spacing:1px;
+  color:var(--sec); text-transform:uppercase;
+  margin-bottom:4px;
+}
+.gotcha-box p {
+  font-size:12px; line-height:1.7; color:var(--ink);
+}
+
+/* CONTROLS */
+.btn-row {
+  display:flex; gap:10px; align-items:center;
+  width:100%; max-width:700px; flex-wrap:wrap;
+}
+
+.btn {
+  font-family:'Fira Code',monospace;
+  font-size:11px; letter-spacing:1px;
+  padding:10px 20px; border-radius:var(--radius);
+  border:2px solid var(--ink);
+  background:transparent; color:var(--ink);
+  cursor:pointer; transition:all .15s;
+}
+.btn:hover { background:var(--ink); color:white; }
+
+.btn-know {
+  border-color:var(--spring); color:var(--spring);
+}
+.btn-know:hover { background:var(--spring); color:white; border-color:var(--spring); }
+
+.btn-study {
+  border-color:var(--java); color:var(--java);
+}
+.btn-study:hover { background:var(--java); color:white; border-color:var(--java); }
+
+.btn-spacer { flex:1; }
+
+/* Keyboard hints */
+.kb-row {
+  display:flex; gap:14px; flex-wrap:wrap; justify-content:center;
+  width:100%; max-width:700px;
+}
+.kb {
+  font-family:'Fira Code',monospace;
+  font-size:10px; color:var(--faint);
+  display:flex; align-items:center; gap:6px;
+}
+kbd {
+  background:white; border:1px solid var(--border);
+  padding:2px 6px; border-radius:3px;
+  font-size:10px; color:var(--muted);
+  box-shadow:0 1px 2px rgba(0,0,0,0.1);
+}
+
+/* BROWSE VIEW */
+.browse-wrap {
+  position:relative; z-index:1;
+  padding:36px;
+  display:none;
+}
+.browse-wrap.active { display:block; }
+
+.browse-section { margin-bottom:40px; }
+
+.browse-section-title {
+  font-family:'Playfair Display',serif;
+  font-size:20px; font-weight:700;
+  color:var(--ink); margin-bottom:16px;
+  display:flex; align-items:center; gap:12px;
+}
+.browse-section-title::after {
+  content:'';
+  flex:1; height:1px; background:var(--border);
+}
+
+.browse-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:12px;
+}
+
+.browse-card {
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:18px;
+  cursor:pointer;
+  transition:all .15s;
+  border-left:3px solid var(--bc, var(--spring));
+}
+.browse-card:hover {
+  transform:translateY(-2px);
+  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  border-color:var(--bc, var(--spring));
+}
+
+.bc-cat {
+  font-family:'Fira Code',monospace;
+  font-size:9px; letter-spacing:2px;
+  color:var(--bc, var(--spring));
+  text-transform:uppercase; margin-bottom:6px;
+}
+.bc-q {
+  font-size:13px; font-weight:600;
+  color:var(--ink); line-height:1.4;
+  margin-bottom:8px;
+}
+.bc-hint {
+  font-size:12px; color:var(--muted); line-height:1.5;
+}
+
+/* Done screen */
+.done-screen {
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:20px; padding:60px 20px; text-align:center;
+  width:100%; max-width:500px;
+}
+.done-screen.show { display:flex; }
+
+.done-icon {
+  font-size:64px;
+  animation:bounce .6s ease;
+}
+@keyframes bounce {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-16px); }
+}
+
+.done-title {
+  font-family:'Playfair Display',serif;
+  font-size:36px; font-weight:900; color:var(--ink);
+}
+.done-sub { font-size:14px; color:var(--muted); line-height:1.7; }
+
+.views-wrap { display:flex; flex-direction:column; width:100%; }
+.view { display:none; }
+.view.active { display:flex; flex-direction:column; align-items:center; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="back-link" href="index.html">← hub</a>
+  <div class="nav-logo">Spring Boot<sup>Q&A</sup></div>
+  <div class="nav-spacer"></div>
+  <div class="nav-stats">
+    <div class="nav-stat">Cards: <span class="nav-stat-val" id="totalCount">0</span></div>
+    <div class="nav-stat">Known: <span class="nav-stat-val" id="knownCount" style="color:var(--spring)">0</span></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-tag">// java · spring boot · interview prep</div>
+    <h1>Spring Boot<br><em>Interview</em><br>Flashcards</h1>
+    <p class="hero-desc">Covers Core Concepts, IoC/DI, AOP, Auto-configuration, Spring MVC, Security, JPA/Hibernate, Testing, and Actuator. Exactly what interviewers ask.</p>
+  </div>
+  <div class="cat-grid" id="catGrid"></div>
+</div>
+
+<!-- PROGRESS ROW -->
+<div class="progress-row" id="progressRow"></div>
+
+<!-- MODE BAR -->
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="setMode('study',this)">📖 Study All</button>
+  <button class="mode-btn" onclick="setMode('weak',this)">🎯 Weak Only</button>
+  <button class="mode-btn" onclick="setMode('browse',this)">🗂 Browse All</button>
+  <div class="mode-spacer"></div>
+  <button class="shuffle-btn" onclick="shuffleDeck()">⇄ Shuffle</button>
+</div>
+
+<!-- STUDY VIEW -->
+<div class="study-wrap" id="studyWrap">
+  <div class="q-list" id="qList"></div>
+
+  <div class="card-stage" id="cardStage">
+    <div class="score-strip">
+      <div class="score-pill"><div class="score-n" id="sKnow">0</div><div class="score-l">✓ KNOW IT</div></div>
+      <div class="score-pill"><div class="score-n" id="sStudy">0</div><div class="score-l">↻ STUDY MORE</div></div>
+      <div class="score-pill"><div class="score-n" id="sLeft">0</div><div class="score-l">REMAINING</div></div>
+    </div>
+
+    <div class="flashcard-wrap">
+      <div class="flashcard" id="flashcard" onclick="flip()">
+        <div class="face face-front" id="frontFace">
+          <div class="front-top">
+            <span class="front-cat-badge" id="fCatBadge"></span>
+            <span class="front-num" id="fNum"></span>
+          </div>
+          <div class="front-body">
+            <div class="front-label">Question</div>
+            <div class="front-question" id="fQuestion"></div>
+            <div class="front-hint" id="fHint"></div>
+          </div>
+          <div class="front-flip-cue">TAP TO REVEAL · SPACE TO FLIP</div>
+        </div>
+
+        <div class="face face-back">
+          <div class="back-top">
+            <div class="back-top-title" id="bTitle"></div>
+            <span class="back-diff" id="bDiff"></span>
+          </div>
+          <div class="back-body" id="bBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-study" onclick="mark(false)">↻ Study More</button>
+      <div class="btn-spacer"></div>
+      <button class="btn" onclick="prev()">← Prev</button>
+      <button class="btn btn-know" onclick="mark(true)">✓ Know It</button>
+    </div>
+
+    <div class="kb-row">
+      <div class="kb"><kbd>Space</kbd> flip</div>
+      <div class="kb"><kbd>→</kbd> next</div>
+      <div class="kb"><kbd>←</kbd> prev</div>
+      <div class="kb"><kbd>K</kbd> know it</div>
+      <div class="kb"><kbd>S</kbd> study more</div>
+    </div>
+
+    <div class="done-screen" id="doneScreen">
+      <div class="done-icon">☕</div>
+      <div class="done-title">Round Complete!</div>
+      <div class="done-sub" id="doneSub"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <button class="btn" onclick="reset(false)">Restart All</button>
+        <button class="btn btn-study" onclick="reset(true)">Weak Only</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BROWSE VIEW -->
+<div class="browse-wrap" id="browseWrap"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const CATS = [
+  { id:'core',     name:'Core / IoC',      color:'#6db33f', short:'CORE' },
+  { id:'di',       name:'Dependency Inj.', color:'#e76f00', short:'DI'   },
+  { id:'aop',      name:'AOP',             color:'#6f42c1', short:'AOP'  },
+  { id:'autoconf', name:'Auto-Config',     color:'#0d6efd', short:'AUTO' },
+  { id:'mvc',      name:'Spring MVC',      color:'#fd7e14', short:'MVC'  },
+  { id:'sec',      name:'Security',        color:'#dc3545', short:'SEC'  },
+  { id:'jpa',      name:'JPA/Hibernate',   color:'#0dcaf0', short:'JPA'  },
+  { id:'test',     name:'Testing',         color:'#20c997', short:'TEST' },
+];
+
+// [question, hint, title, difficulty (core/deep/arch), answer, keyPoints[], code, gotcha]
+const CARDS = [
+
+// ── CORE / IOC ──────────────────────────────
+{ cat:'core', q:'What is the Spring IoC Container and what are its two main types?',
+  hint:'Inversion of Control — who creates objects?',
+  title:'IoC Container', diff:'core',
+  answer:'The IoC Container is responsible for instantiating, configuring, and assembling beans. Instead of objects creating their dependencies, the container injects them. The two types are BeanFactory (basic, lazy) and ApplicationContext (full-featured, used in Spring Boot).',
+  points:['BeanFactory: lightweight, lazy initialization, no AOP/event support','ApplicationContext: extends BeanFactory, adds AOP, events, i18n, eager init','ApplicationContext types: AnnotationConfigApplicationContext, ClassPathXmlApplicationContext','Spring Boot auto-creates ApplicationContext via SpringApplication.run()'],
+  code:`// Spring Boot auto-configures ApplicationContext\n@SpringBootApplication\npublic class App {\n    public static void main(String[] args) {\n        ApplicationContext ctx = SpringApplication.run(App.class, args);\n        MyService svc = ctx.getBean(MyService.class);\n    }\n}`,
+  gotcha:'BeanFactory does NOT support @PostConstruct, ApplicationEvents, or AOP proxies. Always use ApplicationContext in production.' },
+
+{ cat:'core', q:'Explain the Spring Bean lifecycle from instantiation to destruction.',
+  hint:'Instantiate → populate → aware callbacks → init → use → destroy',
+  title:'Bean Lifecycle', diff:'deep',
+  answer:'Spring manages the complete lifecycle: instantiation, dependency injection, Aware callbacks, BeanPostProcessor before/after, init methods, the bean is ready for use, then on context close: destroy methods are called.',
+  points:['1. Instantiate bean (constructor)', '2. Inject dependencies (@Autowired)', '3. Aware callbacks: BeanNameAware, ApplicationContextAware', '4. BeanPostProcessor.postProcessBeforeInitialization()', '5. @PostConstruct / afterPropertiesSet()', '6. BeanPostProcessor.postProcessAfterInitialization()', '7. Bean ready for use', '8. @PreDestroy / destroy() on context close'],
+  code:`@Component\npublic class MyBean implements BeanNameAware {\n    @Autowired\n    private Dependency dep; // Step 2\n\n    @Override\n    public void setBeanName(String name) { // Step 3\n        System.out.println("Bean name: " + name);\n    }\n\n    @PostConstruct       // Step 5\n    public void init() { System.out.println("Ready!"); }\n\n    @PreDestroy          // Step 8\n    public void cleanup() { System.out.println("Bye!"); }\n}`,
+  gotcha:'@PreDestroy is NOT called for prototype-scoped beans — Spring does not manage their destruction.' },
+
+{ cat:'core', q:'What are bean scopes in Spring? Name all 5 and explain each.',
+  hint:'Singleton is default — what are the others?',
+  title:'Bean Scopes', diff:'core',
+  answer:'Spring defines 5 bean scopes: Singleton (one per container), Prototype (new instance each time), Request, Session, and Application (web-only).',
+  points:['Singleton (default): one shared instance per IoC container', 'Prototype: new instance for every getBean() call — Spring doesn\'t manage lifecycle after creation', 'Request: one instance per HTTP request (web)', 'Session: one instance per HTTP session (web)', 'Application: one per ServletContext (web)'],
+  code:`@Component\n@Scope("singleton")   // default\npublic class SingletonBean { }\n\n@Component\n@Scope("prototype")\npublic class PrototypeBean { }\n\n@Component\n@Scope(value = WebApplicationContext.SCOPE_REQUEST,\n       proxyMode = ScopedProxyMode.TARGET_CLASS)\npublic class RequestBean { }`,
+  gotcha:'Injecting a prototype bean into a singleton = the prototype effectively becomes singleton. Fix: use @Lookup, ObjectProvider, or ApplicationContext.getBean().' },
+
+{ cat:'core', q:'What is @SpringBootApplication and what does it do?',
+  hint:'Three annotations in one',
+  title:'@SpringBootApplication', diff:'core',
+  answer:'@SpringBootApplication is a convenience annotation combining three annotations: @SpringBootConfiguration (marks class as config source), @EnableAutoConfiguration (triggers auto-config), and @ComponentScan (scans package and sub-packages for components).',
+  points:['@SpringBootConfiguration: same as @Configuration — marks as bean definition source', '@EnableAutoConfiguration: reads META-INF/spring.factories to auto-configure beans', '@ComponentScan: scans current package + subpackages by default', 'Can exclude auto-configs: @SpringBootApplication(exclude = DataSourceAutoConfiguration.class)'],
+  code:`// Equivalent to:\n@SpringBootConfiguration\n@EnableAutoConfiguration\n@ComponentScan\npublic class App { }\n\n// Exclude a specific auto-configuration\n@SpringBootApplication(\n  exclude = { SecurityAutoConfiguration.class })\npublic class App { }`,
+  gotcha:'If your main class is not in the root package, @ComponentScan won\'t find your components. Always put the main class at the root.' },
+
+// ── DEPENDENCY INJECTION ─────────────────────
+{ cat:'di', q:'What are the three types of dependency injection in Spring?',
+  hint:'Constructor vs field vs setter — which is best?',
+  title:'DI Types', diff:'core',
+  answer:'Spring supports Constructor Injection (recommended), Field Injection (@Autowired on field), and Setter Injection (@Autowired on setter method). Constructor injection is the recommended approach as it makes dependencies explicit and enables immutability.',
+  points:['Constructor: best practice, enables final fields, easy to test without Spring', 'Field: @Autowired directly on field — convenient but hides dependencies, hard to test', 'Setter: optional dependencies, allows reconfiguration — rarely preferred', 'Spring team recommends constructor injection for mandatory deps', 'Use @Autowired(required=false) for optional dependencies'],
+  code:`// Constructor injection (recommended)\n@Service\npublic class OrderService {\n    private final PaymentService paymentService;\n\n    // @Autowired optional when only one constructor\n    public OrderService(PaymentService paymentService) {\n        this.paymentService = paymentService;\n    }\n}\n\n// Field injection (avoid)\n@Service\npublic class OrderService {\n    @Autowired\n    private PaymentService paymentService; // bad: can't be final\n}`,
+  gotcha:'Field injection makes unit testing harder — you can\'t inject mocks without Spring context or reflection. Constructor injection lets you use new OrderService(mockPayment) in tests.' },
+
+{ cat:'di', q:'How does @Autowired resolve when multiple beans of the same type exist?',
+  hint:'@Qualifier, @Primary, bean name matching',
+  title:'@Autowired Resolution', diff:'deep',
+  answer:'When multiple beans of the same type exist, Spring uses: 1) @Primary to designate a default, 2) @Qualifier to specify a bean name explicitly, 3) variable name matching (if name matches bean name). Without disambiguation, Spring throws NoUniqueBeanDefinitionException.',
+  points:['@Primary: marks one bean as default when type is ambiguous', '@Qualifier("beanName"): specify exact bean by name', 'Variable name matching: private Impl1 myService — Spring tries bean named "myService"', 'Can combine @Autowired + @Qualifier on constructor params too', '@Resource (JSR-250): injects by name first, then type'],
+  code:`@Component @Primary\npublic class EmailNotifier implements Notifier { }\n\n@Component\npublic class SmsNotifier implements Notifier { }\n\n@Service\npublic class AlertService {\n    private final Notifier notifier;\n\n    // Gets EmailNotifier because @Primary\n    public AlertService(Notifier notifier) {\n        this.notifier = notifier;\n    }\n\n    // OR: explicit with @Qualifier\n    public AlertService(@Qualifier("smsNotifier") Notifier n) { ... }\n}`,
+  gotcha:'@Primary and @Qualifier on the same bean: @Qualifier always wins at the injection point.' },
+
+{ cat:'di', q:'What is the difference between @Component, @Service, @Repository, and @Controller?',
+  hint:'Semantic aliases — but @Repository does something extra',
+  title:'Stereotype Annotations', diff:'core',
+  answer:'All four are @Component specializations that trigger component scanning. The difference is semantic (readability) and @Repository gets extra behavior: Spring translates persistence-layer exceptions into Spring\'s DataAccessException hierarchy.',
+  points:['@Component: generic component', '@Service: business logic layer (pure alias for @Component)', '@Repository: DAO/persistence layer — adds exception translation via PersistenceExceptionTranslationPostProcessor', '@Controller: Spring MVC controller, handles @RequestMapping', '@RestController = @Controller + @ResponseBody on every method'],
+  code:`@Repository  // Exception translation enabled\npublic class UserRepository {\n    // JPA/JDBC exceptions → DataAccessException\n    public User findById(Long id) { ... }\n}\n\n// Without @Repository:\n// JPAException propagates directly — not Spring's hierarchy\n\n@RestController\n@RequestMapping("/api/users")\npublic class UserController {\n    // Returns JSON directly — no @ResponseBody needed\n}`,
+  gotcha:'@Service and @Component are functionally identical today. The difference is purely semantic/documentation. Teams that follow DDD may not even use @Service.' },
+
+{ cat:'di', q:'What is @Configuration vs @Component? What is @Bean?',
+  hint:'CGLIB proxy — the key difference',
+  title:'@Configuration & @Bean', diff:'deep',
+  answer:'@Configuration marks a class as a source of @Bean definitions. Spring subclasses it with CGLIB, so calling @Bean methods multiple times returns the same singleton. @Component can also define @Bean methods but WITHOUT CGLIB — each call creates a new instance (lite mode).',
+  points:['@Configuration: CGLIB-proxied, ensures @Bean methods return singletons', '@Component with @Bean: "lite" mode — no CGLIB, calling bean method creates new instance', '@Bean: defines a bean method; return value becomes a Spring bean', 'Use @Configuration for beans that depend on each other via method calls', 'proxyBeanMethods=false: disables CGLIB for @Configuration (faster startup)'],
+  code:`@Configuration\npublic class AppConfig {\n    @Bean\n    public DataSource dataSource() {\n        return new HikariDataSource(...);\n    }\n\n    @Bean\n    public JdbcTemplate jdbcTemplate() {\n        return new JdbcTemplate(dataSource()); // Same DataSource instance (CGLIB)\n    }\n}\n\n// Without @Configuration (lite mode):\n@Component\npublic class LiteConfig {\n    @Bean\n    public MyBean myBean() { return new MyBean(); }\n    // Each call to myBean() creates NEW instance — likely a bug\n}`,
+  gotcha:'This is one of the most common Spring interview gotchas. If you call bean methods inside @Component, you get multiple instances.' },
+
+// ── AOP ─────────────────────────────────────
+{ cat:'aop', q:'What is AOP and what are the core concepts: Join Point, Pointcut, Advice, Aspect?',
+  hint:'Cross-cutting concerns like logging, transactions',
+  title:'AOP Core Concepts', diff:'core',
+  answer:'AOP (Aspect-Oriented Programming) allows separating cross-cutting concerns from business logic. Core concepts: Join Point (where advice can run), Pointcut (which join points to intercept), Advice (what to do), Aspect (combines pointcut + advice).',
+  points:['Join Point: specific point in execution (method call, exception) — Spring only supports method-level', 'Pointcut: expression selecting which join points to target', 'Advice: code to run (Before, After, Around, AfterReturning, AfterThrowing)', 'Aspect: class annotated @Aspect — holds pointcuts and advice', 'Weaving: applying aspects — Spring does runtime weaving via proxy', 'Target object: original bean being proxied'],
+  code:`@Aspect @Component\npublic class LoggingAspect {\n\n    // Pointcut expression\n    @Pointcut("execution(* com.example.service.*.*(..))")\n    public void serviceLayer() {}\n\n    @Around("serviceLayer()")\n    public Object logTime(ProceedingJoinPoint pjp) throws Throwable {\n        long start = System.currentTimeMillis();\n        Object result = pjp.proceed(); // call actual method\n        long elapsed = System.currentTimeMillis() - start;\n        log.info("{} took {}ms", pjp.getSignature(), elapsed);\n        return result;\n    }\n}`,
+  gotcha:'AOP only works on Spring-managed beans. Calling a method on "this" within the same class bypasses the proxy entirely — self-invocation problem.' },
+
+{ cat:'aop', q:'How does @Transactional work internally? What is the self-invocation problem?',
+  hint:'Proxy-based — same class call bypasses it',
+  title:'@Transactional Internals', diff:'arch',
+  answer:'@Transactional works via AOP proxy. When you call a @Transactional method from outside the bean, the proxy intercepts it and wraps it in a transaction. If you call a @Transactional method from WITHIN THE SAME CLASS, the proxy is bypassed — no transaction is started.',
+  points:['Spring creates a proxy around your bean at startup', 'Proxy intercepts external calls and applies transaction management', 'Self-invocation (this.method()) bypasses the proxy — transaction annotation is ignored', 'Fix: inject self-reference (not recommended), use @Lookup, or refactor to separate class', '@Transactional on private methods has NO effect (proxies can\'t intercept private)', 'Propagation: REQUIRED (default), REQUIRES_NEW, NESTED, SUPPORTS, NOT_SUPPORTED, NEVER, MANDATORY'],
+  code:`@Service\npublic class OrderService {\n\n    @Transactional  // Works when called from OUTSIDE\n    public void placeOrder(Order order) {\n        saveOrder(order); // ← BUG: self-invocation!\n        // saveOrder's @Transactional is IGNORED\n    }\n\n    @Transactional(propagation = Propagation.REQUIRES_NEW)\n    public void saveOrder(Order order) {\n        repo.save(order); // This transaction is skipped!\n    }\n}`,
+  gotcha:'This catches nearly everyone. The fix is moving saveOrder to a different @Service class so it goes through the proxy.' },
+
+{ cat:'aop', q:'What are @Transactional propagation levels? Explain the most important ones.',
+  hint:'REQUIRED, REQUIRES_NEW, NESTED — what do each do?',
+  title:'Transaction Propagation', diff:'deep',
+  answer:'Propagation defines what happens when a @Transactional method is called while a transaction exists. REQUIRED (default): join existing or create new. REQUIRES_NEW: always creates new, suspends outer. NESTED: savepoint within outer transaction.',
+  points:['REQUIRED: join existing tx if present, else create new (default)', 'REQUIRES_NEW: suspend outer tx, create new independent tx — outer won\'t rollback if inner commits', 'NESTED: uses savepoints — inner rollback doesn\'t rollback outer', 'SUPPORTS: join if exists, run non-transactionally if not', 'NOT_SUPPORTED: always suspend and run non-transactionally', 'NEVER: throw if transaction exists', 'MANDATORY: throw if NO transaction exists'],
+  code:`// Audit log should ALWAYS save, even if main tx rolls back\n@Transactional(propagation = Propagation.REQUIRES_NEW)\npublic void auditLog(String action) {\n    auditRepo.save(new AuditLog(action));\n    // This commits independently of caller's transaction\n}\n\n// Nested: inner rollback = rollback to savepoint only\n@Transactional(propagation = Propagation.NESTED)\npublic void tryOptionalStep() {\n    // If this fails, caller can catch and continue\n}`,
+  gotcha:'REQUIRES_NEW suspending the outer tx can cause deadlocks if both inner and outer try to lock the same DB rows.' },
+
+// ── AUTO-CONFIGURATION ───────────────────────
+{ cat:'autoconf', q:'How does Spring Boot Auto-Configuration work?',
+  hint:'spring.factories / @ConditionalOnClass',
+  title:'Auto-Configuration', diff:'deep',
+  answer:'@EnableAutoConfiguration triggers Spring Boot to scan META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports (or spring.factories pre-2.7). Each auto-config class uses @Conditional annotations to only activate when conditions are met.',
+  points:['Auto-config classes listed in AutoConfiguration.imports file', '@ConditionalOnClass: activates only if class is on classpath', '@ConditionalOnMissingBean: activates only if bean not already defined', '@ConditionalOnProperty: activates based on property value', 'You can override any auto-config by defining your own @Bean of same type', 'See active config: --debug flag shows auto-config report on startup', 'Exclusions: spring.autoconfigure.exclude in application.properties'],
+  code:`// Spring Boot creates DataSource only if HikariCP is on classpath\n// AND no DataSource bean already exists:\n@AutoConfiguration\n@ConditionalOnClass(DataSource.class)\n@ConditionalOnMissingBean(DataSource.class)\npublic class DataSourceAutoConfiguration {\n    @Bean\n    public DataSource dataSource(DataSourceProperties props) {\n        return props.initializeDataSourceBuilder().build();\n    }\n}\n\n// Override: define your own DataSource bean → auto-config skipped\n@Bean\npublic DataSource myDataSource() { return new HikariDataSource(...); }`,
+  gotcha:'Running with --debug prints a "CONDITIONS EVALUATION REPORT" showing every auto-config that matched or was excluded. Use this to debug unexpected behavior.' },
+
+{ cat:'autoconf', q:'What is the difference between application.properties and application.yml? How does @ConfigurationProperties work?',
+  hint:'Type-safe binding of properties to POJOs',
+  title:'Configuration Properties', diff:'core',
+  answer:'Both configure Spring Boot — YAML supports nesting and lists more cleanly. @ConfigurationProperties binds a whole group of properties to a POJO, with type safety, validation, and IDE autocompletion.',
+  points:['application.properties: key=value pairs', 'application.yml: hierarchical YAML — cleaner for nested configs', '@ConfigurationProperties(prefix = "app"): binds all "app.*" properties to class fields', '@EnableConfigurationProperties or @ConfigurationPropertiesScan to register', 'Add @Validated + JSR-303 annotations for validation', 'Profiles: application-dev.yml, application-prod.yml — activated by spring.profiles.active'],
+  code:`# application.yml\napp:\n  payment:\n    api-url: https://pay.example.com\n    timeout: 30s\n    retry-count: 3\n\n// @ConfigurationProperties POJO\n@ConfigurationProperties(prefix = "app.payment")\n@Validated\npublic class PaymentProperties {\n    @NotEmpty\n    private String apiUrl;\n    private Duration timeout = Duration.ofSeconds(10);\n    private int retryCount = 3;\n    // getters + setters (or @ConstructorBinding for immutable)\n}`,
+  gotcha:'@ConfigurationProperties requires the class to be registered as a bean. Add @ConfigurationPropertiesScan to your main class or @Component to the properties class.' },
+
+// ── SPRING MVC ───────────────────────────────
+{ cat:'mvc', q:'Explain the Spring MVC request lifecycle — from HTTP request to response.',
+  hint:'DispatcherServlet is the front controller',
+  title:'Spring MVC Lifecycle', diff:'deep',
+  answer:'DispatcherServlet receives all requests. It consults HandlerMapping to find the right controller method, uses HandlerAdapter to invoke it, the method returns a ModelAndView or ResponseEntity, ViewResolver resolves view (or HttpMessageConverter writes JSON body), response is sent.',
+  points:['1. HTTP request → DispatcherServlet (Front Controller)', '2. HandlerMapping: finds handler method (via @RequestMapping)', '3. HandlerAdapter: invokes handler, handles argument resolution', '4. Controller method executes, returns ResponseEntity / model', '5. If @ResponseBody: HttpMessageConverter serializes to JSON/XML', '6. If view: ViewResolver finds template (Thymeleaf, JSP)', '7. Response written back'],
+  code:`// Full lifecycle annotated\n@RestController // ← HandlerMapping picks this up\n@RequestMapping("/api/orders")\npublic class OrderController {\n\n    // HandlerAdapter resolves @PathVariable, @RequestBody, etc.\n    @PostMapping("/{id}/confirm")\n    public ResponseEntity<OrderDto> confirm(\n        @PathVariable Long id,\n        @RequestBody @Valid ConfirmRequest req) {\n\n        Order order = service.confirm(id, req);\n        // HttpMessageConverter serializes OrderDto → JSON\n        return ResponseEntity.ok(OrderDto.from(order));\n    }\n}`,
+  gotcha:'@Controller + @ResponseBody = @RestController. Using @Controller without @ResponseBody returns a view name string — forgetting this is a common bug.' },
+
+{ cat:'mvc', q:'What is the difference between @RequestParam, @PathVariable, and @RequestBody?',
+  hint:'URL query vs path segment vs request body',
+  title:'Request Parameter Annotations', diff:'core',
+  answer:'@RequestParam extracts query parameters (?key=value). @PathVariable extracts path segments (/users/{id}). @RequestBody deserializes the entire HTTP request body (usually JSON) into a Java object.',
+  points:['@RequestParam: query string params — ?page=1&size=10', '@PathVariable: URL path segments — /users/42', '@RequestBody: HTTP request body — JSON/XML → Java object (via HttpMessageConverter)', '@RequestHeader: extract HTTP headers', '@RequestPart: for multipart/form-data file uploads', 'required=false and defaultValue available for @RequestParam'],
+  code:`@GetMapping("/users")\npublic List<User> list(\n    @RequestParam(defaultValue = "0") int page,\n    @RequestParam(defaultValue = "20") int size) { ... }\n\n@GetMapping("/users/{id}")\npublic User get(@PathVariable Long id) { ... }\n\n@PostMapping("/users")\npublic User create(\n    @RequestBody @Valid CreateUserRequest req) { ... }\n\n@PostMapping("/upload")\npublic String upload(@RequestPart("file") MultipartFile file) { ... }`,
+  gotcha:'@RequestBody reads the input stream — it can only be read ONCE. If a filter already read the body, @RequestBody will get empty content. Use ContentCachingRequestWrapper for filters.' },
+
+{ cat:'mvc', q:'What is @ExceptionHandler and @ControllerAdvice? How do you build global error handling?',
+  hint:'Centralize exception handling across all controllers',
+  title:'Global Exception Handling', diff:'deep',
+  answer:'@ExceptionHandler on a controller method handles exceptions from that controller only. @ControllerAdvice (or @RestControllerAdvice) makes the handler global — applies across all controllers.',
+  points:['@ExceptionHandler(SomeException.class): handles specific exception type', '@RestControllerAdvice = @ControllerAdvice + @ResponseBody', 'Most specific exception type wins if multiple handlers match', 'Can return custom error response with @ResponseStatus', 'Spring Boot\'s BasicErrorController provides default /error handling', 'ProblemDetail (RFC 7807): Spring 6+ standardized error body'],
+  code:`@RestControllerAdvice\npublic class GlobalExceptionHandler {\n\n    @ExceptionHandler(ResourceNotFoundException.class)\n    @ResponseStatus(HttpStatus.NOT_FOUND)\n    public ErrorResponse handleNotFound(ResourceNotFoundException ex) {\n        return new ErrorResponse("NOT_FOUND", ex.getMessage());\n    }\n\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    @ResponseStatus(HttpStatus.BAD_REQUEST)\n    public ErrorResponse handleValidation(MethodArgumentNotValidException ex) {\n        List<String> errors = ex.getBindingResult().getFieldErrors()\n            .stream().map(FieldError::getDefaultMessage).toList();\n        return new ErrorResponse("VALIDATION_ERROR", errors.toString());\n    }\n\n    @ExceptionHandler(Exception.class)  // catch-all\n    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)\n    public ErrorResponse handleAll(Exception ex) { ... }\n}`,
+  gotcha:'Exception handlers are matched from most specific to least specific. A catch-all Exception.class handler won\'t shadow more specific handlers.' },
+
+// ── SECURITY ─────────────────────────────────
+{ cat:'sec', q:'How does Spring Security filter chain work?',
+  hint:'Chain of servlet filters — SecurityFilterChain',
+  title:'Security Filter Chain', diff:'deep',
+  answer:'Spring Security inserts a chain of servlet filters before your application code. Key filters: UsernamePasswordAuthenticationFilter (form login), BasicAuthenticationFilter (HTTP Basic), JwtAuthenticationFilter (custom JWT), ExceptionTranslationFilter (converts exceptions to HTTP responses), FilterSecurityInterceptor (authorization).',
+  points:['SecurityFilterChain: ordered list of security filters', 'Each request passes through all filters in order', 'Authentication filters extract credentials and populate SecurityContext', 'ExceptionTranslationFilter: AuthenticationException → 401, AccessDeniedException → 403', 'SecurityContextHolder: ThreadLocal holding current authentication', 'Multiple SecurityFilterChains: order them with @Order or securityMatcher()'],
+  code:`@Configuration @EnableWebSecurity\npublic class SecurityConfig {\n    @Bean\n    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {\n        return http\n            .csrf(csrf -> csrf.disable())\n            .sessionManagement(sm -> sm\n                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))\n            .authorizeHttpRequests(auth -> auth\n                .requestMatchers("/api/auth/**").permitAll()\n                .requestMatchers("/api/admin/**").hasRole("ADMIN")\n                .anyRequest().authenticated())\n            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)\n            .build();\n    }\n}`,
+  gotcha:'CSRF protection is enabled by default — disable it for stateless REST APIs (using JWT). Leaving it enabled on a JWT API causes all POST/PUT/DELETE to return 403.' },
+
+{ cat:'sec', q:'How do you implement JWT authentication in Spring Boot?',
+  hint:'OncePerRequestFilter → extract → validate → SecurityContext',
+  title:'JWT Authentication', diff:'arch',
+  answer:'Create a OncePerRequestFilter that extracts the JWT from Authorization header, validates the signature, and sets Authentication in SecurityContextHolder. Configure SecurityFilterChain to add this filter before UsernamePasswordAuthenticationFilter.',
+  points:['OncePerRequestFilter: guarantees single execution per request', 'Extract: Authorization: Bearer <token> header', 'Validate: check signature, expiry, claims', 'Set SecurityContext: UsernamePasswordAuthenticationToken in SecurityContextHolder', 'Use UserDetailsService to load user if needed', 'Stateless session: SessionCreationPolicy.STATELESS (no session cookie)'],
+  code:`@Component\npublic class JwtAuthFilter extends OncePerRequestFilter {\n    @Override\n    protected void doFilterInternal(HttpServletRequest req,\n                                    HttpServletResponse res,\n                                    FilterChain chain) throws ... {\n        String header = req.getHeader("Authorization");\n        if (header != null && header.startsWith("Bearer ")) {\n            String token = header.substring(7);\n            if (jwtUtil.isValid(token)) {\n                String username = jwtUtil.extractUsername(token);\n                UserDetails user = userDetailsService.loadUserByUsername(username);\n                var auth = new UsernamePasswordAuthenticationToken(\n                    user, null, user.getAuthorities());\n                SecurityContextHolder.getContext().setAuthentication(auth);\n            }\n        }\n        chain.doFilter(req, res); // continue chain\n    }\n}`,
+  gotcha:'Always call chain.doFilter() even if token is invalid — let the ExceptionTranslationFilter return 401 properly. Throwing early can break error response formatting.' },
+
+{ cat:'sec', q:'What is method-level security? @PreAuthorize vs @Secured vs @RolesAllowed.',
+  hint:'Enable with @EnableMethodSecurity',
+  title:'Method Security', diff:'core',
+  answer:'Method-level security applies access control on individual methods. @PreAuthorize supports Spring EL expressions (most powerful). @Secured: simple role check. @RolesAllowed: JSR-250, similar to @Secured. All require @EnableMethodSecurity on a @Configuration class.',
+  points:['@EnableMethodSecurity replaces @EnableGlobalMethodSecurity (deprecated Spring 6)', '@PreAuthorize: SpEL expression evaluated BEFORE method — most flexible', '@PostAuthorize: evaluated AFTER method, can access return value', '@Secured: simple list of roles — no SpEL', '@RolesAllowed: JSR-250, equivalent to @Secured', 'Built-in SpEL: hasRole(), hasAuthority(), hasAnyRole(), isAuthenticated(), #paramName'],
+  code:`@EnableMethodSecurity  // on @Configuration class\n\n@Service\npublic class DocumentService {\n\n    @PreAuthorize("hasRole('ADMIN')")\n    public void deleteAll() { ... }\n\n    @PreAuthorize("hasRole('USER') and #userId == authentication.principal.id")\n    public Document getDocument(Long userId, Long docId) { ... }\n\n    @PostAuthorize("returnObject.owner == authentication.name")\n    public Document findById(Long id) { ... }\n\n    @PreAuthorize("@documentPermissionEvaluator.canEdit(authentication, #docId)")\n    public void edit(Long docId) { ... }  // custom bean reference\n}`,
+  gotcha:'@PreAuthorize on private methods has no effect — AOP can\'t proxy them. Also, same-class self-invocation bypasses method security entirely.' },
+
+// ── JPA / HIBERNATE ──────────────────────────
+{ cat:'jpa', q:'What is the N+1 query problem and how do you solve it in Spring Data JPA?',
+  hint:'1 query for parents + N queries for each child',
+  title:'N+1 Problem', diff:'arch',
+  answer:'The N+1 problem: loading 100 orders triggers 1 query for orders + 100 more queries for each order\'s customer. Caused by LAZY loading in loops. Solutions: JOIN FETCH in JPQL, @EntityGraph, or @BatchSize.',
+  points:['Root cause: lazily loaded associations accessed in a loop', 'Detection: enable SQL logging (spring.jpa.show-sql=true) and count queries', '1. JOIN FETCH: SELECT o FROM Order o JOIN FETCH o.customer', '2. @EntityGraph: declarative — works with Spring Data methods', '3. @BatchSize(size=100): loads associations in batches', '4. DTO projections: select only needed columns — no association loading', 'Hypersistence Utils, datasource-proxy: tools for detecting N+1 in tests'],
+  code:`// Bad: N+1\nList<Order> orders = orderRepo.findAll();\norders.forEach(o -> System.out.println(o.getCustomer().getName())); // N queries!\n\n// Fix 1: JOIN FETCH in JPQL\n@Query("SELECT o FROM Order o JOIN FETCH o.customer")\nList<Order> findAllWithCustomer();\n\n// Fix 2: @EntityGraph\n@EntityGraph(attributePaths = {"customer", "items"})\nList<Order> findByStatus(OrderStatus status);\n\n// Fix 3: DTO projection\n@Query("SELECT new com.example.OrderSummary(o.id, c.name) \"\n       + \"FROM Order o JOIN o.customer c")\nList<OrderSummary> findOrderSummaries();`,
+  gotcha:'JOIN FETCH with pagination (@PageableDefault) causes HibernateJpaDialect to warn about "applying pagination in memory" — dangerous for large datasets. Use @EntityGraph or batch loading instead.' },
+
+{ cat:'jpa', q:'What is the difference between EAGER and LAZY loading? What are the defaults?',
+  hint:'@OneToMany default vs @ManyToOne default',
+  title:'Eager vs Lazy Loading', diff:'core',
+  answer:'EAGER loading fetches associated entities immediately with the parent. LAZY loading fetches them only when first accessed (proxy). Defaults: @ManyToOne, @OneToOne = EAGER. @OneToMany, @ManyToMany = LAZY.',
+  points:['EAGER: join or separate query at load time — can cause unnecessary data fetch', 'LAZY: Hibernate creates a proxy; real query fires on first field access', '@ManyToOne: EAGER by default — can cause N+1 if in a list', '@OneToMany: LAZY by default', 'LazyInitializationException: accessing lazy proxy AFTER session closes', 'Fix: Open Session In View filter (not recommended), fetch in service layer, or use DTOs'],
+  code:`@Entity\npublic class Order {\n    @ManyToOne(fetch = FetchType.LAZY)  // override default EAGER\n    private Customer customer;\n\n    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)  // default\n    private List<OrderItem> items;\n}\n\n// LazyInitializationException:\nOrder order = repo.findById(1L).get();\n// session closes here...\norder.getCustomer().getName(); // BOOM! LazyInitializationException`,
+  gotcha:'spring.jpa.open-in-view=true (default) keeps the session open through the HTTP request — masks LazyInitializationException but causes performance issues. Disable it in production.' },
+
+{ cat:'jpa', q:'What is the difference between save(), saveAndFlush(), and flush() in Spring Data JPA?',
+  hint:'Persistence context buffering',
+  title:'JPA Save Methods', diff:'deep',
+  answer:'save(): puts entity in persistence context, SQL may or may not be executed immediately. saveAndFlush(): forces immediate SQL execution. flush(): forces all pending changes in persistence context to DB without committing transaction.',
+  points:['Persistence context (1st level cache): buffers changes', 'save(): returns managed entity; SQL executed at flush time (end of tx or explicit flush)', 'saveAndFlush(): calls save() then flush() immediately', 'flush(): sends all pending SQL to DB within current transaction', 'findAll() after save() may use in-memory cache — use saveAndFlush() for tests', 'Dirty checking: Hibernate auto-detects changes to managed entities — no explicit save() needed'],
+  code:`@Transactional\npublic void updateAndRead() {\n    User user = repo.findById(1L).get();\n    user.setName("Updated"); // dirty checking — no save() needed!\n    // Hibernate will auto-flush at commit\n}\n\n// Test scenario: need to verify DB state within same tx\n@Test @Transactional\npublic void testSave() {\n    repo.saveAndFlush(user); // force SQL now\n    entityManager.clear();  // clear 1st level cache\n    User found = repo.findById(user.getId()).get(); // re-reads from DB\n    assertEquals("Expected", found.getName());\n}`,
+  gotcha:'Dirty checking works only for MANAGED entities (fetched within current session). Detached entities must be explicitly merged or saved.' },
+
+// ── TESTING ──────────────────────────────────
+{ cat:'test', q:'What is the difference between @SpringBootTest, @WebMvcTest, and @DataJpaTest?',
+  hint:'Full context vs slice test — choose the smallest slice',
+  title:'Spring Boot Test Slices', diff:'core',
+  answer:'@SpringBootTest loads the full application context (slow). @WebMvcTest loads only the web layer (controllers, filters). @DataJpaTest loads only JPA layer (repositories, embedded DB). Use the smallest slice for faster, focused tests.',
+  points:['@SpringBootTest: full context, tests integration — slow', '@WebMvcTest(MyController.class): only web layer, mocks service layer', '@DataJpaTest: only JPA repos, uses H2 by default, transaction per test (rollback)', '@JsonTest: only Jackson serialization/deserialization', '@MockBean: creates a Mockito mock AND registers it as a Spring bean', '@SpyBean: real bean wrapped in Mockito spy'],
+  code:`// Fast: only web layer\n@WebMvcTest(UserController.class)\nclass UserControllerTest {\n    @Autowired MockMvc mockMvc;\n    @MockBean UserService userService; // mock the service\n\n    @Test\n    void getUser_returns200() throws Exception {\n        when(userService.find(1L)).thenReturn(new User(1L, "Riad"));\n        mockMvc.perform(get("/api/users/1"))\n            .andExpect(status().isOk())\n            .andExpect(jsonPath("$.name").value("Riad"));\n    }\n}\n\n// JPA layer only\n@DataJpaTest\nclass UserRepositoryTest {\n    @Autowired UserRepository repo;\n    @Test\n    void save_and_find() {\n        User saved = repo.save(new User("Riad"));\n        assertThat(repo.findById(saved.getId())).isPresent();\n    }\n}`,
+  gotcha:'@DataJpaTest replaces DataSource with embedded H2 by default. Add @AutoConfigureTestDatabase(replace = NONE) to test against your real database.' },
+
+{ cat:'test', q:'How do you test a @Transactional service without touching the real database?',
+  hint:'@MockBean the repository, test business logic only',
+  title:'Service Layer Testing', diff:'core',
+  answer:'For pure unit tests, use Mockito without Spring context at all — just new ServiceClass(mockRepo). For Spring integration tests, @MockBean the repository and test transaction behavior. The fastest approach is plain Mockito.',
+  points:['Pure unit test: Mockito only, no Spring context, no @SpringBootTest', '@ExtendWith(MockitoExtension.class): inject @Mock and @InjectMocks', '@MockBean: slower — starts Spring context but replaces bean with mock', 'Test happy path, edge cases, and exception scenarios separately', 'verify(): assert that specific methods were called on mocks', 'Use ArgumentCaptor to inspect what args were passed to mocks'],
+  code:`// Fast unit test — no Spring context\n@ExtendWith(MockitoExtension.class)\nclass OrderServiceTest {\n    @Mock OrderRepository orderRepo;\n    @Mock PaymentService paymentService;\n    @InjectMocks OrderService orderService;  // injects mocks above\n\n    @Test\n    void placeOrder_chargesCorrectAmount() {\n        Order order = new Order(100.0);\n        when(orderRepo.save(any())).thenReturn(order);\n\n        orderService.placeOrder(order);\n\n        verify(paymentService).charge(100.0); // assert side effect\n        verify(orderRepo).save(order);\n    }\n\n    @Test\n    void placeOrder_throwsWhenPaymentFails() {\n        when(paymentService.charge(any())).thenThrow(PaymentException.class);\n        assertThrows(PaymentException.class,\n            () -> orderService.placeOrder(new Order(50.0)));\n    }\n}`,
+  gotcha:'@InjectMocks uses field injection — if your service uses constructor injection (recommended), you need to construct it manually: new OrderService(mockRepo, mockPayment).' },
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let deck = [...CARDS];
+let idx = 0;
+let isFlipped = false;
+let known = new Set();
+let weak = new Set();
+let scores = { know:0, study:0 };
+let mode = 'study';
+let activeCat = null;
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  buildCatGrid();
+  buildProgressRow();
+  buildQList();
+  buildBrowse();
+  renderCard();
+  updateNavStats();
+}
+
+function buildCatGrid() {
+  const grid = document.getElementById('catGrid');
+  grid.innerHTML = '';
+  CATS.forEach(c => {
+    const cnt = CARDS.filter(card => card.cat === c.id).length;
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.style.setProperty('--cat-color', c.color);
+    div.innerHTML = `<div class="cc-name">${c.name}</div><div class="cc-count">${cnt} cards</div>`;
+    div.onclick = () => filterByCat(c.id, div);
+    grid.appendChild(div);
+  });
+  // "All" tile
+  const allDiv = document.createElement('div');
+  allDiv.className = 'cat-card active';
+  allDiv.style.setProperty('--cat-color','#6db33f');
+  allDiv.innerHTML = `<div class="cc-name">All Topics</div><div class="cc-count">${CARDS.length} cards</div>`;
+  allDiv.onclick = () => filterByCat(null, allDiv);
+  grid.insertBefore(allDiv, grid.firstChild);
+}
+
+function buildProgressRow() {
+  const row = document.getElementById('progressRow');
+  row.innerHTML = '';
+  CATS.forEach(c => {
+    const probs = CARDS.filter(card => card.cat === c.id);
+    const knownCnt = probs.filter(card => known.has(card.q)).length;
+    const cell = document.createElement('div');
+    cell.className = 'prog-cell';
+    cell.style.cursor = 'pointer';
+    cell.innerHTML = `
+      <div class="prog-label">${c.short}</div>
+      <div class="prog-bar-wrap">
+        <div class="prog-bar-fill" style="width:${probs.length?knownCnt/probs.length*100:0}%;background:${c.color}"></div>
+      </div>
+      <div class="prog-nums">${knownCnt}/${probs.length}</div>
+    `;
+    cell.onclick = () => filterByCat(c.id, null);
+    row.appendChild(cell);
+  });
+}
+
+function buildQList() {
+  const list = document.getElementById('qList');
+  list.innerHTML = '';
+  deck.forEach((card, i) => {
+    const cat = CATS.find(c => c.id === card.cat);
+    const div = document.createElement('div');
+    div.className = 'q-item' + (i === idx ? ' active' : '') + (known.has(card.q) ? ' known' : '');
+    div.innerHTML = `
+      <div class="q-item-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="q-item-content">
+        <div class="q-item-text">${card.q.length > 70 ? card.q.slice(0,70)+'…' : card.q}</div>
+        <div class="q-item-cat" style="color:${cat?.color}">${cat?.name}</div>
+      </div>
+      ${known.has(card.q) ? '<div class="q-done-badge">✓</div>' : ''}
+    `;
+    div.onclick = () => { idx = i; isFlipped = false; document.getElementById('flashcard').classList.remove('flipped'); renderCard(); };
+    list.appendChild(div);
+  });
+}
+
+function buildBrowse() {
+  const wrap = document.getElementById('browseWrap');
+  wrap.innerHTML = '';
+  CATS.forEach(cat => {
+    const cards = CARDS.filter(c => c.cat === cat.id);
+    const sec = document.createElement('div');
+    sec.className = 'browse-section';
+    sec.innerHTML = `<div class="browse-section-title" style="color:${cat.color}">${cat.name}</div>`;
+    const grid = document.createElement('div');
+    grid.className = 'browse-grid';
+    cards.forEach(card => {
+      const div = document.createElement('div');
+      div.className = 'browse-card';
+      div.style.setProperty('--bc', cat.color);
+      div.innerHTML = `
+        <div class="bc-cat">${cat.name}</div>
+        <div class="bc-q">${card.q}</div>
+        <div class="bc-hint">${card.hint}</div>
+      `;
+      div.onclick = () => {
+        const di = deck.findIndex(c => c.q === card.q);
+        if(di >= 0) { idx = di; isFlipped = false; setMode('study', null); }
+      };
+      grid.appendChild(div);
+    });
+    sec.appendChild(grid);
+    wrap.appendChild(sec);
+  });
+}
+
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+function renderCard() {
+  if(deck.length === 0 || idx >= deck.length) { showDone(); return; }
+  const card = deck[idx];
+  const cat = CATS.find(c => c.id === card.cat);
+
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('doneScreen').classList.remove('show');
+  document.querySelector('.flashcard-wrap').style.visibility = 'visible';
+  document.querySelector('.btn-row').style.visibility = 'visible';
+
+  // Front
+  const badge = document.getElementById('fCatBadge');
+  badge.textContent = cat?.short || card.cat;
+  badge.style.color = cat?.color || '#6db33f';
+  badge.style.borderColor = cat?.color || '#6db33f';
+
+  document.getElementById('fNum').textContent = `${idx+1} / ${deck.length}`;
+  document.getElementById('fQuestion').textContent = card.q;
+  document.getElementById('fHint').textContent = card.hint ? `💡 ${card.hint}` : '';
+
+  // Back
+  document.getElementById('bTitle').textContent = card.title;
+  const diffEl = document.getElementById('bDiff');
+  diffEl.textContent = card.diff.toUpperCase();
+  diffEl.className = `back-diff diff-${card.diff}`;
+
+  const body = document.getElementById('bBody');
+  body.innerHTML = `
+    <div class="back-section">
+      <h4>Answer</h4>
+      <p>${card.answer}</p>
+    </div>
+    <div class="back-section">
+      <h4>Key Points</h4>
+      <ul class="back-list">${card.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+    </div>
+    ${card.code ? `
+    <div class="back-section">
+      <h4>Code Example</h4>
+      <div class="back-code">${card.code}</div>
+    </div>` : ''}
+    ${card.gotcha ? `
+    <div class="gotcha-box">
+      <div class="gb-label">⚠ Interview Gotcha</div>
+      <p>${card.gotcha}</p>
+    </div>` : ''}
+  `;
+
+  // Update sidebar highlight
+  document.querySelectorAll('.q-item').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+
+  updateScores();
+}
+
+function updateScores() {
+  document.getElementById('sKnow').textContent = scores.know;
+  document.getElementById('sStudy').textContent = scores.study;
+  document.getElementById('sLeft').textContent = deck.length - idx;
+}
+
+function updateNavStats() {
+  document.getElementById('totalCount').textContent = CARDS.length;
+  document.getElementById('knownCount').textContent = known.size;
+}
+
+// ─────────────────────────────────────────────
+// INTERACTIONS
+// ─────────────────────────────────────────────
+function flip() {
+  isFlipped = !isFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+}
+
+function mark(isKnown) {
+  const card = deck[idx];
+  if(isKnown) {
+    known.add(card.q); weak.delete(card.q); scores.know++;
+  } else {
+    weak.add(card.q); known.delete(card.q); scores.study++;
+  }
+  idx++;
+  buildProgressRow();
+  buildQList();
+  updateNavStats();
+  renderCard();
+}
+
+function prev() {
+  if(idx > 0) { idx--; isFlipped=false; renderCard(); }
+}
+
+function showDone() {
+  document.querySelector('.flashcard-wrap').style.visibility = 'hidden';
+  document.querySelector('.btn-row').style.visibility = 'hidden';
+  document.getElementById('doneScreen').classList.add('show');
+  const w = weak.size;
+  document.getElementById('doneSub').textContent =
+    `You knew ${scores.know} of ${deck.length} questions. ${w > 0 ? `${w} question${w>1?'s':''} marked for review.` : '🎉 All correct — you\'re ready!'}`;
+}
+
+function reset(weakOnly) {
+  scores = { know:0, study:0 };
+  if(weakOnly) {
+    mode = 'weak';
+    deck = CARDS.filter(c => weak.has(c.q));
+    if(activeCat) deck = deck.filter(c => c.cat === activeCat);
+  } else {
+    known.clear(); weak.clear(); mode = 'study';
+    deck = activeCat ? CARDS.filter(c => c.cat === activeCat) : [...CARDS];
+  }
+  idx = 0;
+  document.getElementById('doneScreen').classList.remove('show');
+  document.querySelector('.flashcard-wrap').style.visibility = 'visible';
+  document.querySelector('.btn-row').style.visibility = 'visible';
+  buildQList();
+  buildProgressRow();
+  updateNavStats();
+  renderCard();
+}
+
+function shuffleDeck() {
+  for(let i = deck.length-1; i>0; i--) {
+    const j = Math.floor(Math.random()*(i+1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  idx = 0; isFlipped = false;
+  buildQList();
+  renderCard();
+}
+
+function filterByCat(catId, clickedEl) {
+  activeCat = catId;
+  document.querySelectorAll('.cat-card').forEach(el => el.classList.remove('active'));
+  if(clickedEl) clickedEl.classList.add('active');
+  deck = catId ? CARDS.filter(c => c.cat === catId) : [...CARDS];
+  idx = 0; scores = {know:0,study:0};
+  buildQList();
+  buildBrowse();
+  setMode('study', null);
+  renderCard();
+}
+
+function setMode(m, btn) {
+  mode = m;
+  if(btn) {
+    document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  const sw = document.getElementById('studyWrap');
+  const bw = document.getElementById('browseWrap');
+  if(m === 'browse') {
+    sw.style.display = 'none';
+    bw.classList.add('active');
+  } else {
+    sw.style.display = '';
+    bw.classList.remove('active');
+    if(m === 'weak') {
+      deck = CARDS.filter(c => weak.has(c.q));
+      if(activeCat) deck = deck.filter(c => c.cat === activeCat);
+    } else {
+      deck = activeCat ? CARDS.filter(c => c.cat === activeCat) : [...CARDS];
+    }
+    idx = 0; scores = {know:0,study:0};
+    buildQList();
+    renderCard();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if(e.target.tagName==='INPUT') return;
+  if(e.code==='Space'){ e.preventDefault(); flip(); }
+  if(e.code==='ArrowRight') { mark(true); /* implicit next */ }
+  if(e.code==='ArrowLeft') prev();
+  if(e.key==='k'||e.key==='K') mark(true);
+  if(e.key==='s'||e.key==='S') mark(false);
+});
+
+init();
+</script>
+</body>
+</html>

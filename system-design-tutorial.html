@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>30 System Design Concepts</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --border: #1e2230;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #a259ff;
+    --text: #c9d1d9;
+    --dim: #6e7681;
+    --white: #f0f6fc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 60px 24px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.2);
+    padding: 4px 12px;
+    border-radius: 2px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  h1 span {
+    color: var(--accent);
+    -webkit-text-stroke: 1px var(--accent);
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--dim);
+    max-width: 500px;
+    margin: 0 auto 32px;
+    line-height: 1.8;
+  }
+
+  /* Search & filter */
+  .controls {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-wrap {
+    position: relative;
+  }
+
+  .search-wrap::before {
+    content: '⌕';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--dim);
+    font-size: 18px;
+    pointer-events: none;
+  }
+
+  input[type="search"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--white);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    padding: 10px 16px 10px 40px;
+    border-radius: 4px;
+    width: 280px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="search"]:focus { border-color: var(--accent); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .filter-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 7px 14px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,229,255,0.06);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    z-index: 100;
+    transition: width 0.3s;
+    width: 0%;
+  }
+
+  /* Main grid */
+  .grid-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .card {
+    background: var(--bg);
+    padding: 28px;
+    cursor: pointer;
+    transition: background 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 2px; height: 0;
+    background: var(--accent);
+    transition: height 0.3s;
+  }
+
+  .card:hover { background: var(--surface); }
+  .card:hover::after { height: 100%; }
+
+  .card-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .cat-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .card-summary {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--dim);
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.04);
+    color: var(--dim);
+    border: 1px solid var(--border);
+  }
+
+  /* Modal */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 200;
+    backdrop-filter: blur(4px);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+
+  .overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent);
+    max-width: 720px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 40px;
+    position: relative;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 20px;
+    background: none;
+    border: none;
+    color: var(--dim);
+    font-size: 24px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .modal-close:hover { color: var(--white); }
+
+  .modal-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .modal-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .modal-cat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    margin-bottom: 24px;
+  }
+
+  .modal-body h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 24px 0 10px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .modal-body p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.9;
+    color: var(--text);
+  }
+
+  .modal-body ul {
+    list-style: none;
+    margin-top: 8px;
+  }
+
+  .modal-body ul li {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+    color: var(--text);
+    padding-left: 18px;
+    position: relative;
+  }
+
+  .modal-body ul li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent2);
+  }
+
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    padding: 16px;
+    margin-top: 10px;
+    border-radius: 2px;
+    overflow-x: auto;
+  }
+
+  .code-block pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #a8d8a8;
+  }
+
+  .modal-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    padding: 10px 20px;
+    background: rgba(0,229,255,0.08);
+    border: 1px solid rgba(0,229,255,0.3);
+    color: var(--accent);
+    text-decoration: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+
+  .modal-link:hover {
+    background: rgba(0,229,255,0.15);
+  }
+
+  /* counter */
+  .stats {
+    position: relative; z-index: 1;
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .hidden { display: none !important; }
+
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+
+<header>
+  <div class="tag">// system design</div>
+  <h1>30 Concepts.<br><span>One Reference.</span></h1>
+  <p class="subtitle">A structured guide to the most critical system design topics every backend engineer must know.</p>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="stat-num">30</div><div class="stat-label">Concepts</div></div>
+  <div class="stat"><div class="stat-num">8</div><div class="stat-label">Categories</div></div>
+  <div class="stat"><div class="stat-num" id="visibleCount">30</div><div class="stat-label">Showing</div></div>
+</div>
+
+<div class="controls">
+  <div class="search-wrap">
+    <input type="search" id="searchInput" placeholder="search concepts..." oninput="filterCards()">
+  </div>
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" onclick="setFilter('api', this)" style="--fc:#00e5ff">APIs</button>
+    <button class="filter-btn" onclick="setFilter('database', this)">Database</button>
+    <button class="filter-btn" onclick="setFilter('caching', this)">Caching</button>
+    <button class="filter-btn" onclick="setFilter('architecture', this)">Architecture</button>
+    <button class="filter-btn" onclick="setFilter('messaging', this)">Messaging</button>
+    <button class="filter-btn" onclick="setFilter('reliability', this)">Reliability</button>
+    <button class="filter-btn" onclick="setFilter('network', this)">Network</button>
+  </div>
+</div>
+
+<div class="grid-wrap" id="cardGrid"></div>
+
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<footer>built from 30 blogs · system design reference · 2026</footer>
+
+<script>
+const CATEGORIES = {
+  api:          { label: 'APIs & Communication',  color: '#00e5ff' },
+  database:     { label: 'Databases',             color: '#a259ff' },
+  caching:      { label: 'Caching',               color: '#ff6b35' },
+  architecture: { label: 'Architecture',          color: '#4caf50' },
+  messaging:    { label: 'Messaging & Events',    color: '#ffeb3b' },
+  reliability:  { label: 'Reliability',           color: '#f44336' },
+  network:      { label: 'Networking',            color: '#2196f3' },
+  misc:         { label: 'Misc / Algorithms',     color: '#e91e63' },
+};
+
+const CONCEPTS = [
+  {
+    num: 1, title: 'APIs',
+    cat: 'api', url: 'https://lnkd.in/dsbwPZ6N',
+    summary: 'The contract between services — how they talk to each other.',
+    tags: ['REST', 'HTTP', 'contract'],
+    what: 'An API (Application Programming Interface) is a set of rules that lets two software programs communicate. It defines what requests can be made, how to make them, and the data format for requests and responses.',
+    why: 'APIs are the backbone of modern software. Without them, microservices, mobile apps, and third-party integrations wouldn\'t exist. Every feature you use online is powered by APIs behind the scenes.',
+    keyPoints: ['APIs define a contract — callers don\'t care how the server works internally', 'REST, GraphQL, gRPC are the main styles', 'APIs use HTTP verbs: GET, POST, PUT, DELETE, PATCH', 'Versioning (v1, v2) ensures backward compatibility', 'Authentication (OAuth, API keys) protects endpoints'],
+    example: `// REST API call example\nGET /api/v1/users/42\nAuthorization: Bearer <token>\n\n// Response\n{ "id": 42, "name": "Riad", "role": "developer" }`,
+    interview: 'What\'s the difference between REST and RPC? When would you pick GraphQL over REST?',
+  },
+  {
+    num: 2, title: 'API Gateways',
+    cat: 'api', url: 'https://lnkd.in/gtyXmvf4',
+    summary: 'Single entry point that routes, authenticates, and throttles all API traffic.',
+    tags: ['routing', 'auth', 'rate-limit'],
+    what: 'An API Gateway is a server that acts as the front door for all client requests to your backend microservices. It handles cross-cutting concerns so individual services don\'t have to.',
+    why: 'In a microservices architecture, clients shouldn\'t talk directly to 20 different services. The gateway provides a single, consistent interface and removes duplication of auth, logging, and rate limiting.',
+    keyPoints: ['Authentication & authorization (JWT validation)', 'Rate limiting and throttling', 'Request routing to correct microservice', 'SSL termination', 'Response caching', 'Load balancing across service instances', 'Examples: AWS API Gateway, Kong, Nginx, Envoy'],
+    example: `Client → API Gateway → /users → UserService\n                    → /orders → OrderService\n                    → /payment → PaymentService\n\n// Gateway handles: auth, rate-limit, logging`,
+    interview: 'How does an API gateway differ from a reverse proxy? What is the BFF (Backend for Frontend) pattern?',
+  },
+  {
+    num: 3, title: 'JWTs',
+    cat: 'api', url: 'https://lnkd.in/ghtXYRqU',
+    summary: 'Stateless, self-contained tokens for secure information transmission.',
+    tags: ['auth', 'token', 'stateless'],
+    what: 'JSON Web Token (JWT) is a compact, URL-safe token format for representing claims securely between two parties. It has 3 parts: Header.Payload.Signature.',
+    why: 'Traditional session auth requires server-side storage. JWTs are stateless — the token itself contains user info, so any server can verify it without a database lookup. Perfect for distributed systems.',
+    keyPoints: ['Three parts: Header (alg), Payload (claims), Signature', 'Signed with a secret (HS256) or private key (RS256)', 'Claims: iss, sub, exp, iat, aud', 'Access tokens are short-lived (15 min); refresh tokens are long-lived', 'Tokens cannot be revoked without a denylist — this is a known drawback'],
+    example: `// JWT Structure\neyJhbGciOiJIUzI1NiJ9     ← Header\n.eyJzdWIiOiIxMjMifQ==    ← Payload\n.SflKxwRJSMeKKF2Q        ← Signature\n\n// Spring Security filter checks signature on every request`,
+    interview: 'How do you invalidate a JWT before expiry? What\'s the difference between access and refresh tokens?',
+  },
+  {
+    num: 4, title: 'Webhooks',
+    cat: 'api', url: 'https://lnkd.in/geHxGX-7',
+    summary: 'Event-driven HTTP callbacks — "don\'t call us, we\'ll call you."',
+    tags: ['event-driven', 'callback', 'push'],
+    what: 'A webhook is an HTTP POST request sent automatically by a service to a URL you register, triggered by a specific event. Instead of polling, the sender pushes data to you.',
+    why: 'Polling wastes resources. Webhooks enable real-time event processing: payment confirmations, git push notifications, IoT sensor updates. They\'re the foundation of event-driven integration.',
+    keyPoints: ['Register a URL endpoint to receive events', 'Validate payloads using HMAC signatures', 'Return 2xx quickly; process async to avoid timeouts', 'Handle duplicate delivery (idempotency)', 'Implement retry logic on your consumer', 'Examples: Stripe, GitHub, Slack all use webhooks'],
+    example: `// Your Spring Boot webhook receiver\n@PostMapping("/webhook/payment")\npublic ResponseEntity<?> handle(\n  @RequestHeader("X-Signature") String sig,\n  @RequestBody PaymentEvent event) {\n  verifySignature(sig); // security!\n  processAsync(event);\n  return ResponseEntity.ok().build(); // respond fast!\n}`,
+    interview: 'How do you ensure exactly-once webhook processing? How do you debug missed webhooks?',
+  },
+  {
+    num: 5, title: 'REST vs GraphQL',
+    cat: 'api', url: 'https://lnkd.in/gM5VHKQS',
+    summary: 'REST: multiple fixed endpoints. GraphQL: one flexible endpoint, ask for what you need.',
+    tags: ['REST', 'GraphQL', 'query'],
+    what: 'REST exposes multiple URLs per resource with fixed response shapes. GraphQL exposes a single endpoint where clients specify exactly what data they need using a query language.',
+    why: 'REST over-fetches (too much data) or under-fetches (too many round trips). GraphQL solves both by letting clients declare their data needs. Critical for mobile apps where bandwidth matters.',
+    keyPoints: ['REST: /users/1, /users/1/posts (multiple trips)', 'GraphQL: one query, nested relationships in one request', 'GraphQL has strong typing via Schema Definition Language', 'N+1 query problem is a classic GraphQL pitfall → use DataLoader', 'REST is simpler to cache; GraphQL caching is complex', 'Use REST for simple CRUD; GraphQL for complex, nested data needs'],
+    example: `# GraphQL query - get exactly what you need\nquery {\n  user(id: "1") {\n    name\n    posts { title createdAt }\n    followers { count }\n  }\n}`,
+    interview: 'When would you choose GraphQL over REST? How do you handle authorization in GraphQL resolvers?',
+  },
+  {
+    num: 6, title: 'Load Balancing',
+    cat: 'architecture', url: 'https://lnkd.in/gvxfwEUr',
+    summary: 'Distribute traffic across multiple servers to prevent any single point of failure.',
+    tags: ['traffic', 'horizontal-scale', 'availability'],
+    what: 'A load balancer distributes incoming network traffic across multiple backend servers using algorithms like Round Robin, Least Connections, or IP Hash.',
+    why: 'A single server has limits. Load balancing enables horizontal scaling — add more servers to handle more traffic. It also enables zero-downtime deployments and automatic failover.',
+    keyPoints: ['Layer 4 (TCP/IP) vs Layer 7 (HTTP) load balancers', 'Algorithms: Round Robin, Least Connections, IP Hash, Weighted', 'Health checks remove unhealthy instances automatically', 'Session affinity (sticky sessions) for stateful apps', 'Examples: AWS ALB/NLB, Nginx, HAProxy', 'Active-passive vs active-active HA setups'],
+    example: `// Round Robin distribution\nRequest 1 → Server A\nRequest 2 → Server B\nRequest 3 → Server C\nRequest 4 → Server A (cycle)\n\n// If Server B fails health check:\nRequest 1 → Server A\nRequest 2 → Server C  (B skipped)`,
+    interview: 'What\'s the difference between L4 and L7 load balancing? How does sticky session work and when is it a problem?',
+  },
+  {
+    num: 7, title: 'Proxy vs Reverse Proxy',
+    cat: 'network', url: 'https://lnkd.in/gMTtidBq',
+    summary: 'Forward proxy hides the client; reverse proxy hides the server.',
+    tags: ['proxy', 'nginx', 'security'],
+    what: 'A forward proxy sits in front of clients (e.g., a corporate proxy). A reverse proxy sits in front of servers, intercepting client requests on their behalf.',
+    why: 'Reverse proxies are everywhere in production: they handle SSL termination, caching, compression, and routing — keeping your application servers simple and secure.',
+    keyPoints: ['Forward Proxy: client → proxy → internet (client anonymity, content filtering)', 'Reverse Proxy: internet → proxy → server (server anonymity, security)', 'Nginx, Caddy, and HAProxy are common reverse proxies', 'Handles SSL/TLS termination (offloads crypto from app server)', 'Can serve static files and cache responses', 'Used for A/B testing and canary deployments'],
+    example: `# Nginx reverse proxy config\nserver {\n  listen 443 ssl;\n  server_name api.example.com;\n\n  location / {\n    proxy_pass http://localhost:8080;  # Spring Boot\n    proxy_set_header Host $host;\n  }\n}`,
+    interview: 'How is a reverse proxy different from an API gateway? Can Nginx act as both a load balancer and reverse proxy?',
+  },
+  {
+    num: 8, title: 'Scalability',
+    cat: 'architecture', url: 'https://lnkd.in/gPGhW-qK',
+    summary: 'The ability of a system to handle increased load by adding resources.',
+    tags: ['horizontal', 'vertical', 'scale-out'],
+    what: 'Scalability is how well a system can handle growing demand. Vertical scaling adds more power to existing machines. Horizontal scaling adds more machines.',
+    why: 'Every successful system eventually hits capacity limits. Designing for scalability from the start avoids costly rewrites later. Horizontal scaling is the foundation of cloud architecture.',
+    keyPoints: ['Vertical scaling (scale up): bigger CPU/RAM — has a ceiling', 'Horizontal scaling (scale out): more servers — almost limitless', 'Stateless services scale horizontally easily', 'Database scaling: read replicas, sharding, partitioning', 'Auto-scaling groups in cloud (AWS ASG, K8s HPA)', 'Measure: throughput (req/s), latency (p99), resource utilization'],
+    example: `// Vertical: t3.micro → t3.2xlarge\n// Horizontal: 1 instance → 10 instances behind LB\n\n// For horizontal scaling, your app must be stateless:\n// Store sessions in Redis, not in-memory\n// Store files in S3, not local disk`,
+    interview: 'What makes a service hard to scale horizontally? How would you scale a chat application to 1 million users?',
+  },
+  {
+    num: 9, title: 'Availability',
+    cat: 'reliability', url: 'https://lnkd.in/gQk2p4_6',
+    summary: 'The percentage of time a system is operational and accessible.',
+    tags: ['uptime', 'SLA', 'nines'],
+    what: 'Availability is measured as uptime percentage. "Five nines" (99.999%) allows only ~5 minutes downtime per year. It\'s achieved through redundancy, failover, and eliminating SPOFs.',
+    why: 'Downtime costs money. For e-commerce, every minute offline is lost revenue. High availability requires architectural decisions: redundant components, health checks, and graceful degradation.',
+    keyPoints: ['99% = 87.6h downtime/year; 99.9% = 8.7h; 99.99% = 52min; 99.999% = 5min', 'Achieved via: redundancy, failover, load balancing, replication', 'Active-active: both nodes serve traffic', 'Active-passive: standby takes over if primary fails', 'Health checks detect failures automatically', 'Chaos engineering (Netflix Chaos Monkey) tests resilience'],
+    example: `// Availability = Uptime / (Uptime + Downtime)\n// For SLA 99.9%:\n// Allowed downtime = 365 * 24 * 60 * 0.001 = 525 minutes/year\n// ≈ 8.7 hours per year\n\n// To achieve this: deploy 2+ instances,\n// health checks every 30s, auto-replace unhealthy`,
+    interview: 'What\'s the tradeoff between availability and consistency (CAP theorem)? How do you achieve HA for a stateful database?',
+  },
+  {
+    num: 10, title: 'SPOF',
+    cat: 'reliability', url: 'https://lnkd.in/gw_uHZWn',
+    summary: 'Single Point of Failure — any component whose failure brings down the whole system.',
+    tags: ['failure', 'redundancy', 'resilience'],
+    what: 'A Single Point of Failure is a component that, if it fails, causes the entire system to stop working. Eliminating SPOFs is the core goal of high-availability design.',
+    why: 'In production, everything fails eventually. Hardware dies, networks glitch, software crashes. If any one failure can take down your system, it will happen at the worst time.',
+    keyPoints: ['Identify SPOFs: single DB, single LB, single DNS, single datacenter', 'Eliminate via: redundancy, replication, clustering', 'Database: primary + replica with automatic failover', 'Load balancer: deploy multiple LBs (active-active)', 'DNS: use multiple nameservers', 'Geography: multi-AZ or multi-region deployments'],
+    example: `// SPOF Architecture (bad)\nClient → Single Nginx → Single App → Single MySQL\n\n// HA Architecture (good)\nClient → DNS Round Robin\n       → [Nginx-1, Nginx-2]  (LB pair)\n       → [App-1, App-2, App-3]\n       → [MySQL Primary + Replica with auto-failover]`,
+    interview: 'How do you identify SPOFs in a system design? What is MTTR and MTBF?',
+  },
+  {
+    num: 11, title: 'CAP Theorem',
+    cat: 'database', url: 'https://lnkd.in/g_tFqJJb',
+    summary: 'A distributed system can only guarantee 2 of 3: Consistency, Availability, Partition Tolerance.',
+    tags: ['distributed', 'consistency', 'tradeoff'],
+    what: 'CAP Theorem states that in a distributed system, during a network partition, you must choose between Consistency (all nodes see the same data) and Availability (system keeps responding).',
+    why: 'Network partitions are inevitable in distributed systems. Understanding CAP helps you choose the right database and design appropriate consistency guarantees for your use case.',
+    keyPoints: ['Consistency: every read gets the most recent write', 'Availability: every request gets a (possibly stale) response', 'Partition Tolerance: system works despite network failures (always required)', 'CP systems: Zookeeper, HBase, MongoDB (in strong mode)', 'AP systems: Cassandra, DynamoDB, CouchDB', 'PACELC extends CAP: even without partition, tradeoff exists'],
+    example: `// CP choice (banking)\n// "I\'d rather fail than return wrong balance"\nif (can\'t reach all nodes) → return error\n\n// AP choice (social media likes)\n// "Slightly stale count is fine"\nif (can\'t reach all nodes) → return last known count`,
+    interview: 'Is CAP a binary choice? What is eventual consistency and when is it acceptable?',
+  },
+  {
+    num: 12, title: 'SQL vs NoSQL',
+    cat: 'database', url: 'https://lnkd.in/gHyC9qWc',
+    summary: 'SQL: structured, relational, ACID. NoSQL: flexible, scalable, multiple models.',
+    tags: ['SQL', 'NoSQL', 'schema'],
+    what: 'SQL databases use a fixed schema with relations and guarantee ACID. NoSQL databases sacrifice some structure for flexibility, horizontal scalability, and specialized data models (document, key-value, graph, column).',
+    why: 'Not every problem fits a relational model. Social networks, product catalogs, real-time analytics, and session stores often perform better with NoSQL. Choosing correctly saves massive engineering effort.',
+    keyPoints: ['SQL: PostgreSQL, MySQL, SQL Server — strong consistency, JOINs, transactions', 'Document: MongoDB, Couchbase — flexible JSON, no fixed schema', 'Key-Value: Redis, DynamoDB — ultra-fast lookups', 'Column: Cassandra, HBase — time-series, wide rows', 'Graph: Neo4j — social networks, recommendations', 'Choose SQL when: complex queries, strong consistency needed'],
+    example: `// SQL — normalized\nusers: id, name, email\norders: id, user_id, total, created_at\n\n// NoSQL document — denormalized\n{\n  "_id": "u1",\n  "name": "Riad",\n  "orders": [{ "total": 150, "date": "2026-05-04" }]\n}`,
+    interview: 'When would you use MongoDB over PostgreSQL? How do you handle transactions in NoSQL?',
+  },
+  {
+    num: 13, title: 'ACID Transactions',
+    cat: 'database', url: 'https://lnkd.in/dB3QHiMz',
+    summary: 'Atomicity, Consistency, Isolation, Durability — the gold standard for data integrity.',
+    tags: ['transactions', 'ACID', 'integrity'],
+    what: 'ACID is a set of properties that guarantee database transactions are processed reliably, even in case of errors, power failures, or concurrent access.',
+    why: 'Financial systems, order management, and any system where partial updates would cause corruption need ACID. Understanding isolation levels lets you balance consistency vs performance.',
+    keyPoints: ['Atomicity: all-or-nothing (rollback on failure)', 'Consistency: DB goes from one valid state to another', 'Isolation: concurrent transactions don\'t interfere', 'Durability: committed data survives crashes (WAL, fsync)', 'Isolation levels: Read Uncommitted → Read Committed → Repeatable Read → Serializable', 'Serializable = maximum isolation, minimum concurrency'],
+    example: `// Bank transfer — ACID required\nBEGIN TRANSACTION;\n  UPDATE accounts SET balance = balance - 500 WHERE id = 1;\n  UPDATE accounts SET balance = balance + 500 WHERE id = 2;\n  -- If step 2 fails, step 1 is also rolled back (Atomicity)\nCOMMIT;`,
+    interview: 'What is a phantom read? When would you use READ COMMITTED vs SERIALIZABLE isolation?',
+  },
+  {
+    num: 14, title: 'Database Indexes',
+    cat: 'database', url: 'https://lnkd.in/g_-bQWtA',
+    summary: 'Data structures that speed up reads at the cost of write overhead and storage.',
+    tags: ['B-tree', 'performance', 'query'],
+    what: 'A database index is an additional data structure (typically a B-tree or hash) that allows the database to find rows without scanning the entire table.',
+    why: 'Without an index, a query on a 100M row table requires a full table scan. With an index, it\'s O(log n). Proper indexing is the single biggest lever for query performance.',
+    keyPoints: ['B-tree indexes: good for range queries (>, <, BETWEEN)', 'Hash indexes: perfect for equality (=), bad for ranges', 'Composite index: column order matters — leftmost prefix rule', 'Covering index: index contains all columns needed by query', 'Indexes slow down INSERT/UPDATE/DELETE (index must be updated)', 'Avoid indexing low-cardinality columns (boolean, status with 3 values)'],
+    example: `-- Without index: Full Table Scan (slow)\nSELECT * FROM orders WHERE customer_id = 42;\n\n-- Create index\nCREATE INDEX idx_orders_customer ON orders(customer_id);\n\n-- Now: Index Seek (fast, O(log n))\nEXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 42;`,
+    interview: 'What is an index scan vs index seek? How do you decide which columns to index? What is a covering index?',
+  },
+  {
+    num: 15, title: 'Database Sharding',
+    cat: 'database', url: 'https://lnkd.in/g9mc-d5m',
+    summary: 'Horizontal partitioning of data across multiple database instances.',
+    tags: ['horizontal-partition', 'scale', 'shard-key'],
+    what: 'Sharding splits a large database into smaller pieces (shards) distributed across multiple servers. Each shard holds a subset of the data based on a shard key.',
+    why: 'When a single database can\'t handle the data volume or write throughput, sharding scales it horizontally. Used by Instagram, Twitter, and most large-scale systems.',
+    keyPoints: ['Shard key selection is critical — bad key causes hotspots', 'Range-based sharding: users 1-1M on shard 1, 1M-2M on shard 2', 'Hash-based sharding: shard = hash(user_id) % num_shards (more uniform)', 'Cross-shard JOINs are expensive — denormalize or avoid', 'Resharding when adding nodes is painful — consistent hashing helps', 'Alternatives: read replicas, vertical scaling, caching (try these first!)'],
+    example: `// Hash-based sharding\nshardId = userId % 4\n\n// userId = 1001 → shard 1 (1001 % 4 = 1)\n// userId = 1002 → shard 2 (1002 % 4 = 2)\n// userId = 1003 → shard 3 (1003 % 4 = 3)\n// userId = 1004 → shard 0 (1004 % 4 = 0)`,
+    interview: 'What problems does resharding cause? How does consistent hashing minimize data movement during resharding?',
+  },
+  {
+    num: 16, title: 'Consistent Hashing',
+    cat: 'architecture', url: 'https://lnkd.in/gR9wFDpz',
+    summary: 'A hashing scheme where adding/removing nodes minimizes data redistribution.',
+    tags: ['distributed', 'hash-ring', 'load'],
+    what: 'Consistent hashing maps both data and servers onto a virtual ring. Each data item is assigned to the nearest server clockwise on the ring. Adding/removing a server only moves a fraction of keys.',
+    why: 'In regular modular hashing, adding a server reshuffles most keys — terrible for distributed caches. Consistent hashing only moves K/n keys (K=total keys, n=servers), making scaling painless.',
+    keyPoints: ['Ring-based: both nodes and keys are hashed to a position', 'Adding a node: only keys between new node and predecessor move', 'Removing a node: only that node\'s keys move to successor', 'Virtual nodes (vnodes) improve load distribution', 'Used in: Cassandra, DynamoDB, Redis Cluster, CDNs', 'Replication factor: replicate to next N nodes on ring'],
+    example: `// Without consistent hashing (modular)\n// 4 servers: key → hash(key) % 4\n// Add 5th server: ~80% of keys move!\n\n// With consistent hashing:\n// 4 servers on ring\n// Add 5th server: only ~20% of keys move`,
+    interview: 'How do virtual nodes improve load distribution in consistent hashing? Where does Cassandra use this?',
+  },
+  {
+    num: 17, title: 'CDC',
+    cat: 'messaging', url: 'https://lnkd.in/gWhGwh9Z',
+    summary: 'Change Data Capture — track and propagate every DB change as a stream of events.',
+    tags: ['Debezium', 'event-stream', 'sync'],
+    what: 'CDC is a pattern that captures changes (INSERT, UPDATE, DELETE) from a database transaction log and streams them as events to downstream consumers.',
+    why: 'Keeping multiple systems in sync (DB + Elasticsearch + cache) without CDC requires dual writes that can fail. CDC reads the DB log directly, guaranteeing no changes are missed.',
+    keyPoints: ['Reads the database transaction log (WAL in Postgres, binlog in MySQL)', 'Tools: Debezium (most popular), AWS DMS, Maxwell', 'Use cases: sync to Elasticsearch, invalidate cache, audit log, event sourcing', 'Outbox pattern: write to DB + outbox table, CDC picks up outbox', 'At-least-once delivery — consumers must be idempotent', 'Minimal performance impact on source DB'],
+    example: `// Debezium captures MySQL binlog\n// Every INSERT/UPDATE/DELETE becomes a Kafka message:\n{\n  "op": "u",  // u=update, c=create, d=delete\n  "before": { "id": 1, "stock": 10 },\n  "after":  { "id": 1, "stock": 9  },\n  "source": { "table": "inventory" }\n}`,
+    interview: 'What is the outbox pattern and how does CDC enable it? How do you handle schema changes in CDC?',
+  },
+  {
+    num: 18, title: 'Caching',
+    cat: 'caching', url: 'https://lnkd.in/gBSeTstS',
+    summary: 'Store frequently accessed data in fast memory to reduce latency and DB load.',
+    tags: ['Redis', 'memory', 'TTL'],
+    what: 'Caching stores copies of frequently requested data in a fast-access layer (usually in-memory) so future requests are served faster without hitting the slower backend.',
+    why: 'A Redis read is ~0.1ms. A PostgreSQL query might be 50ms. Caching 10% of your hot data can reduce DB load by 90%. It\'s the most impactful single optimization in most systems.',
+    keyPoints: ['Cache hit: data found in cache (fast)', 'Cache miss: data not in cache, fetch from DB, store in cache', 'TTL (Time-to-Live): auto-expire stale data', 'Cache invalidation is the hard problem', 'Thundering herd: many cache misses at once overwhelm DB', 'Tools: Redis, Memcached, Hazelcast, Caffeine (in-process)'],
+    example: `// Spring Boot + Redis cache\n@Cacheable(value = "products", key = "#id")\npublic Product getProduct(Long id) {\n    // Only called on cache miss\n    return productRepository.findById(id);\n}\n\n@CacheEvict(value = "products", key = "#product.id")\npublic void updateProduct(Product product) { ... }`,
+    interview: 'What is cache stampede and how do you prevent it? When should you NOT use a cache?',
+  },
+  {
+    num: 19, title: 'Caching Strategies',
+    cat: 'caching', url: 'https://lnkd.in/dVk7nZ_Y',
+    summary: 'Cache-Aside, Write-Through, Write-Back, Read-Through — different patterns for different needs.',
+    tags: ['cache-aside', 'write-through', 'consistency'],
+    what: 'Caching strategies define how data flows between your application, cache, and database. The strategy choice affects consistency, performance, and complexity.',
+    why: 'Wrong caching strategy leads to stale data or cache/DB inconsistency. Understanding each pattern helps you pick the right one for your read/write workload.',
+    keyPoints: ['Cache-Aside (Lazy Loading): app reads cache, on miss fetches DB and populates cache. Most common.', 'Write-Through: write to cache and DB simultaneously. Cache always fresh, but write latency doubles.', 'Write-Back (Write-Behind): write to cache only, async write to DB. Fast writes, risk of data loss.', 'Read-Through: cache fetches from DB automatically on miss. Simpler app code.', 'Refresh-Ahead: proactively refresh cache before TTL expires.'],
+    example: `// Cache-Aside pattern\nString value = cache.get(key);\nif (value == null) {\n    value = db.query(key);  // cache miss\n    cache.set(key, value, TTL);\n}\nreturn value;\n\n// Write-Through\ncache.set(key, value);\ndb.write(key, value);  // synchronous`,
+    interview: 'Which caching strategy would you use for a user profile system? What are the consistency risks of write-back caching?',
+  },
+  {
+    num: 20, title: 'Cache Eviction Policies',
+    cat: 'caching', url: 'https://lnkd.in/gQAEXEmq',
+    summary: 'How the cache decides what to remove when it\'s full.',
+    tags: ['LRU', 'LFU', 'eviction'],
+    what: 'When a cache is full and a new item needs to be stored, the eviction policy determines which existing item to remove.',
+    why: 'The wrong eviction policy causes poor cache hit rates. LRU works for most cases, but LFU is better for skewed access patterns (some items accessed billions of times).',
+    keyPoints: ['LRU (Least Recently Used): evict item not accessed for longest time. Default in Redis.', 'LFU (Least Frequently Used): evict item accessed least often. Better for stable hot data.', 'FIFO: evict oldest inserted item. Simple but often poor hit rate.', 'MRU (Most Recently Used): evict most recently used. Useful for scan patterns.', 'Random: evict random item. Surprisingly effective for large caches.', 'TTL-based: evict when time expires, regardless of access pattern.'],
+    example: `// Redis eviction policies (maxmemory-policy)\n// allkeys-lru      → LRU across all keys\n// volatile-lru     → LRU only for keys with TTL set\n// allkeys-lfu      → LFU across all keys\n// volatile-ttl     → evict soonest-to-expire key first\n// noeviction       → return error when full (default)`,
+    interview: 'How would you implement an LRU cache in Java? (HashMap + DoublyLinkedList) What\'s the time complexity?',
+  },
+  {
+    num: 21, title: 'CDN',
+    cat: 'network', url: 'https://lnkd.in/gaW4Vkpy',
+    summary: 'Content Delivery Network — geographically distributed edge servers for fast static content.',
+    tags: ['edge', 'static', 'latency'],
+    what: 'A CDN is a network of edge servers distributed globally. When a user requests content, it\'s served from the nearest edge node instead of the origin server, dramatically reducing latency.',
+    why: 'A server in US East takes ~200ms to reach Southeast Asia. A CDN edge in Singapore responds in ~10ms. For images, JS, CSS, and videos, CDNs are non-negotiable at scale.',
+    keyPoints: ['Edge servers cache static assets (images, JS, CSS, videos)', 'Reduces latency by serving from geographically closer nodes', 'Reduces origin server load (bandwidth offloading)', 'Cache-Control headers control CDN TTL', 'Invalidation: purge by URL, tag, or entire cache', 'Examples: Cloudflare, AWS CloudFront, Akamai, Fastly', 'CDNs also provide DDoS protection and WAF'],
+    example: `// Without CDN: User in Dhaka → Server in Frankfurt (150ms)\n// With CDN:    User in Dhaka → CDN edge in Singapore (12ms)\n\n// Cache-Control for CDN\nCache-Control: public, max-age=86400, s-maxage=31536000\n// Browser cache: 1 day\n// CDN cache: 1 year`,
+    interview: 'What\'s the difference between a CDN and a cache? How do you handle CDN cache invalidation after a deploy?',
+  },
+  {
+    num: 22, title: 'Rate Limiting Algorithms',
+    cat: 'api', url: 'https://lnkd.in/gYDxg8XY',
+    summary: 'Control request rates to prevent abuse, DDoS, and resource exhaustion.',
+    tags: ['throttle', 'token-bucket', 'sliding-window'],
+    what: 'Rate limiting restricts how many requests a client can make in a time window. Different algorithms offer different tradeoffs between smoothness and precision.',
+    why: 'Without rate limiting, a single bad actor can bring down your service. It also prevents accidental abuse (infinite retry loops), enforces API tiers, and protects downstream dependencies.',
+    keyPoints: ['Fixed Window: count resets at fixed intervals. Boundary exploit: burst at window edge.', 'Sliding Window Log: track exact timestamps. Most accurate, high memory.', 'Sliding Window Counter: approximation using previous + current window. Good balance.', 'Token Bucket: tokens added at fixed rate; requests consume tokens. Allows bursts.', 'Leaky Bucket: queue requests, process at fixed rate. Smooth but adds latency.', 'Store counters in Redis with atomic increments for distributed rate limiting.'],
+    example: `// Token Bucket: 100 tokens, refill 10/second\n// Allows burst up to 100, sustained rate = 10 req/s\n\n// Redis sliding window\nLUNG script:\n  ZADD key now now\n  ZREMRANGEBYSCORE key 0 (now - window)\n  count = ZCARD key\n  if count > limit: return 429`,
+    interview: 'How do you implement distributed rate limiting across multiple servers? What HTTP status code should rate limiting return?',
+  },
+  {
+    num: 23, title: 'Message Queues',
+    cat: 'messaging', url: 'https://lnkd.in/g-jnNGDC',
+    summary: 'Async communication between services via durable, decoupled message buffers.',
+    tags: ['Kafka', 'RabbitMQ', 'async'],
+    what: 'A message queue is a buffer between services that asynchronously receives, stores, and delivers messages. Producers write to the queue; consumers read at their own pace.',
+    why: 'Direct API calls create tight coupling and cascading failures. Message queues decouple services, absorb traffic spikes, enable retry logic, and allow independent scaling of producers and consumers.',
+    keyPoints: ['Producer → Queue → Consumer (decoupled)', 'Durability: messages persist to disk (not lost on crash)', 'At-least-once delivery: consumers must be idempotent', 'Dead Letter Queue (DLQ): failed messages go here for inspection', 'Kafka: high-throughput, partitioned log, messages retained (replayable)', 'RabbitMQ: lower latency, complex routing, messages deleted after ack', 'Use cases: order processing, email sending, event streaming, microservice integration'],
+    example: `// Spring Boot + Kafka producer\n@Service\npublic class OrderService {\n    @Autowired KafkaTemplate<String, OrderEvent> kafka;\n\n    public void placeOrder(Order o) {\n        db.save(o);\n        kafka.send("orders", new OrderEvent(o)); // async\n    }\n}`,
+    interview: 'What\'s the difference between Kafka and RabbitMQ? How do you ensure message ordering in Kafka?',
+  },
+  {
+    num: 24, title: 'Bloom Filters',
+    cat: 'misc', url: 'https://lnkd.in/gfGjCrSZ',
+    summary: 'Probabilistic data structure: fast membership test with possible false positives, never false negatives.',
+    tags: ['probabilistic', 'membership', 'memory'],
+    what: 'A Bloom filter is a space-efficient, probabilistic data structure used to test whether an element is a member of a set. It can say "definitely not in set" or "probably in set."',
+    why: 'Checking if a user visited a URL (for deduplication) against billions of records would be expensive with a hash set. A Bloom filter does it with kilobytes of memory and O(1) time.',
+    keyPoints: ['No false negatives: if it says "not in set", it\'s guaranteed', 'False positives possible: "in set" might be wrong (tunable rate)', 'Space complexity: much lower than hash sets', 'Cannot delete elements (counting Bloom filters can)', 'Used in: Cassandra (check if key exists before disk read), Chrome (safe browsing), databases', 'Parameters: m (bits), k (hash functions), n (expected elements)'],
+    example: `// Use case: avoid DB lookup for "definitely new" users\nif (!bloomFilter.mightContain(userId)) {\n    // 100% guaranteed new user\n    createUser(userId);\n} else {\n    // Probably exists — verify with DB\n    if (!db.userExists(userId)) createUser(userId);\n}`,
+    interview: 'What is the false positive rate formula for a Bloom filter? How does Cassandra use Bloom filters?',
+  },
+  {
+    num: 25, title: 'Idempotency',
+    cat: 'reliability', url: 'https://lnkd.in/gDB3AJij',
+    summary: 'An operation is idempotent if repeating it multiple times has the same effect as doing it once.',
+    tags: ['retry', 'safety', 'exactly-once'],
+    what: 'An idempotent operation produces the same result regardless of how many times it\'s called. Critical for retry logic in distributed systems where requests may be sent multiple times.',
+    why: 'Networks fail. Timeouts happen. You never know if a request was received or processed. If your operations aren\'t idempotent, retries cause duplicate charges, double orders, or corrupted state.',
+    keyPoints: ['HTTP: GET, PUT, DELETE are idempotent; POST is not by default', 'Idempotency key: unique ID per operation, server deduplicates', 'Store processed keys in Redis/DB with TTL', 'Payment APIs (Stripe) require idempotency keys for all mutations', 'Natural idempotency: SET operations, upserts', 'At-least-once + idempotent consumer = effectively-once semantics'],
+    example: `// Non-idempotent (dangerous)\nPOST /payments  → charges $100\nPOST /payments  → charges $100 again! (duplicate)\n\n// Idempotent with key\nPOST /payments\nIdempotency-Key: order-1234-payment\n→ First call: charges $100\n→ Retry: returns cached response, no new charge`,
+    interview: 'How do you implement idempotency in a payment service? What is the difference between idempotent and safe HTTP methods?',
+  },
+  {
+    num: 26, title: 'Concurrency vs Parallelism',
+    cat: 'architecture', url: 'https://lnkd.in/gGZXhjBD',
+    summary: 'Concurrency: deal with many things at once. Parallelism: do many things at once.',
+    tags: ['threads', 'async', 'CPU'],
+    what: 'Concurrency is about structure — multiple tasks making progress by interleaving (one core can be concurrent). Parallelism is about execution — tasks literally running simultaneously on multiple cores.',
+    why: 'Understanding this distinction guides architecture choices. Web servers need concurrency (handle 10k connections without 10k threads). ML training needs parallelism (actually compute in parallel on GPUs).',
+    keyPoints: ['Concurrency: achieved via threads, async/await, event loops', 'Parallelism: requires multiple CPU cores or machines', 'Java concurrency: synchronized, volatile, java.util.concurrent, CompletableFuture', 'Event loop (Node.js, Vert.x): single thread, non-blocking I/O, high concurrency', 'Thread pool: bounded number of threads serving many requests', 'Race conditions: shared mutable state + concurrent access = bugs'],
+    example: `// Concurrent but not parallel (single thread event loop)\nasync fetchAll() {\n  await Promise.all([fetch(url1), fetch(url2)]);\n  // Both requests in flight at same time (concurrent)\n  // But executed on single JS thread\n}\n\n// Parallel: Java Fork/Join pool\n// Actually executes on multiple CPU cores`,
+    interview: 'How does Java\'s CompletableFuture enable concurrency? What is the Actor model and how does it avoid race conditions?',
+  },
+  {
+    num: 27, title: 'Long Polling vs WebSockets',
+    cat: 'network', url: 'https://lnkd.in/d9xKD28K',
+    summary: 'Real-time communication patterns: polling hacks vs persistent bidirectional connections.',
+    tags: ['real-time', 'WebSocket', 'push'],
+    what: 'Long Polling: client sends request, server holds it open until data is available, then responds. WebSockets: full-duplex persistent TCP connection enabling true real-time bidirectional communication.',
+    why: 'Regular HTTP is request-response. For real-time features (chat, live scores, notifications), you need the server to push data to clients. WebSockets are the modern solution; Long Polling is a fallback.',
+    keyPoints: ['Regular Polling: client asks every N seconds. High latency, wasteful.', 'Long Polling: server holds request until data ready. Simpler than WS.', 'WebSocket: single TCP connection, full-duplex, low overhead, true real-time', 'Server-Sent Events (SSE): one-directional push from server to client (news feeds)', 'WebSocket connections are stateful — hard to scale horizontally', 'Use a pub/sub broker (Redis Pub/Sub) to distribute WS messages across servers'],
+    example: `// WebSocket in Spring Boot\n@MessageMapping("/chat")\n@SendTo("/topic/messages")\npublic Message handleMessage(Message msg) {\n    return msg; // broadcast to all subscribers\n}\n\n// Client JS\nconst socket = new SockJS('/ws');\nconst stompClient = Stomp.over(socket);`,
+    interview: 'How do you scale WebSocket connections across multiple servers? What\'s the difference between SSE and WebSockets?',
+  },
+  {
+    num: 28, title: 'Stateful vs Stateless',
+    cat: 'architecture', url: 'https://lnkd.in/gz_ccK-Y',
+    summary: 'Stateless services are easy to scale; stateful services are complex but sometimes necessary.',
+    tags: ['session', 'scale', 'design'],
+    what: 'A stateless service doesn\'t store client context between requests — each request has all needed info. A stateful service retains client state across requests.',
+    why: 'Stateless services can be scaled horizontally without coordination — any server can handle any request. This is why REST was designed to be stateless and why JWT replaced server-side sessions.',
+    keyPoints: ['Stateless: no session stored on server, all state in client (JWT) or shared store', 'Stateful: session lives on specific server — sticky sessions needed, hard to scale', 'Move state externally: sessions in Redis, files in S3, config in environment vars', '"Share nothing" architecture: each service instance is completely independent', 'Databases are inherently stateful — they\'re the exception', 'FaaS/Lambda: forced stateless by design'],
+    example: `// Stateful (bad for scale)\n// Session stored in server memory\nHttpSession session = request.getSession();\nsession.setAttribute("user", user);\n// Request MUST go to same server!\n\n// Stateless (good)\nreturn ResponseEntity.ok()\n  .header("Authorization", "Bearer " + jwtToken)\n  .build(); // Any server can verify JWT`,
+    interview: 'How do you make a stateful application stateless? What state is acceptable to keep in memory on an application server?',
+  },
+  {
+    num: 29, title: 'Batch vs Stream Processing',
+    cat: 'messaging', url: 'https://lnkd.in/gKtj_qWh',
+    summary: 'Batch: process accumulated data periodically. Stream: process data continuously as it arrives.',
+    tags: ['Spark', 'Kafka', 'ETL'],
+    what: 'Batch processing collects data over time and processes it as a large chunk (e.g., nightly reports). Stream processing handles each event as it arrives with low latency.',
+    why: 'Not everything needs real-time processing. Monthly invoices are batch. Fraud detection must be stream. Choosing correctly avoids over-engineering and unnecessary infrastructure cost.',
+    keyPoints: ['Batch: high throughput, high latency, simpler. Tools: Spark, Hadoop, Spring Batch', 'Stream: low latency, continuous, complex. Tools: Kafka Streams, Apache Flink, Spark Streaming', 'Lambda architecture: batch (accuracy) + streaming (speed) layers combined', 'Kappa architecture: streaming only, reprocess with replay', 'Window functions in streams: tumbling, sliding, session windows', 'Use cases: batch = billing, reports, ML training; stream = fraud, monitoring, recommendations'],
+    example: `// Spring Batch — nightly invoice generation\n@Bean\npublic Job invoiceJob() {\n    return jobBuilder.get("invoiceJob")\n        .start(readOrdersStep())\n        .next(calculateTotalsStep())\n        .next(sendEmailsStep())\n        .build();\n}\n\n// vs Kafka Streams — real-time fraud check\nstream.filter(txn -> txn.amount > 10000)\n      .to("fraud-alerts");`,
+    interview: 'What is the Lambda architecture? When would you choose Flink over Spark for stream processing?',
+  },
+  {
+    num: 30, title: 'Geohashing',
+    cat: 'misc', url: 'https://lnkd.in/gjSbKdpN',
+    summary: 'Encode geographic coordinates into a short string for efficient proximity queries.',
+    tags: ['geo', 'location', 'proximity'],
+    what: 'Geohashing divides the Earth into a grid and encodes latitude/longitude as a short alphanumeric string. Nearby locations share a common prefix.',
+    why: 'Querying "find all restaurants within 1km" on latitude/longitude columns requires complex math. Geohash turns it into a simple string prefix query, enabling standard database indexes.',
+    keyPoints: ['Each character added to the hash doubles precision', '6-char geohash ≈ 1.2km × 0.6km cell', 'Nearby points share a common prefix (with edge case exceptions)', 'Stored in a regular indexed VARCHAR column — fast prefix queries', 'Used by: Uber, Lyft (driver matching), Yelp, Instagram (location search)', 'Redis supports GEOADD/GEORADIUS natively using geohash internally'],
+    example: `// Dhaka coordinates\nlat = 23.8103, lng = 90.4125\ngeohash = "hscx9e" (6-char ≈ 1km precision)\n\n// Find all drivers within ~1km of rider\nSELECT * FROM drivers\nWHERE geohash LIKE 'hscx9%'\n-- Fast B-tree index scan on string prefix!`,
+    interview: 'Why do you need to check adjacent geohash cells for proximity queries? How does Redis GEORADIUS work internally?',
+  },
+];
+
+let currentFilter = 'all';
+
+function getCatColor(cat) {
+  return CATEGORIES[cat]?.color || '#888';
+}
+
+function renderCards(data) {
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = '';
+  data.forEach(c => {
+    const col = getCatColor(c.cat);
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.cat = c.cat;
+    div.innerHTML = `
+      <div class="card-num">// ${String(c.num).padStart(2,'0')}</div>
+      <div class="card-title">
+        <span class="cat-dot" style="background:${col}"></span>
+        ${c.title}
+      </div>
+      <div class="card-summary">${c.summary}</div>
+      <div class="card-tags">${c.tags.map(t=>`<span class="chip">${t}</span>`).join('')}</div>
+    `;
+    div.onclick = () => openModal(c);
+    grid.appendChild(div);
+  });
+  document.getElementById('visibleCount').textContent = data.length;
+}
+
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const filtered = CONCEPTS.filter(c => {
+    const matchFilter = currentFilter === 'all' || c.cat === currentFilter;
+    const matchSearch = !q || c.title.toLowerCase().includes(q) || c.summary.toLowerCase().includes(q) || c.tags.some(t => t.toLowerCase().includes(q));
+    return matchFilter && matchSearch;
+  });
+  renderCards(filtered);
+}
+
+function setFilter(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  filterCards();
+}
+
+function openModal(c) {
+  const col = getCatColor(c.cat);
+  document.getElementById('modalContent').innerHTML = `
+    <div class="modal-num">concept ${String(c.num).padStart(2,'0')} · <span style="color:${col}">${CATEGORIES[c.cat]?.label || c.cat}</span></div>
+    <div class="modal-title">${c.title}</div>
+    <div class="modal-cat">${c.tags.map(t=>`<span class="chip" style="border-color:${col};color:${col}">${t}</span>`).join(' ')}</div>
+    <div class="modal-body">
+      <h3>What is it?</h3>
+      <p>${c.what}</p>
+      <h3>Why does it matter?</h3>
+      <p>${c.why}</p>
+      <h3>Key points</h3>
+      <ul>${c.keyPoints.map(k=>`<li>${k}</li>`).join('')}</ul>
+      <h3>Example</h3>
+      <div class="code-block"><pre>${c.example}</pre></div>
+      <h3>Interview angle</h3>
+      <p style="color:#ffeb3b">${c.interview}</p>
+      <a class="modal-link" href="${c.url}" target="_blank">↗ Read full blog post</a>
+    </div>
+  `;
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('overlay')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalDirect(); });
+
+// Progress bar on scroll
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+  document.getElementById('progressBar').style.width = pct + '%';
+});
+
+// Init
+renderCards(CONCEPTS);
+</script>
+</body>
+</html>

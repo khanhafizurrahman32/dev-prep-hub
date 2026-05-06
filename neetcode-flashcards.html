@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeetCode Pattern Flashcards</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;600&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f5f0e8;
+  --surface: #ede7d9;
+  --card-front: #1a1a2e;
+  --card-back: #0f3460;
+  --ink: #1a1a2e;
+  --ink-dim: #6b6560;
+  --ink-faint: #b8b0a4;
+  --accent: #e94560;
+  --accent2: #f5a623;
+  --accent3: #16213e;
+  --green: #2ecc71;
+  --border: #d4cdc4;
+
+  --p-slide: #e94560;
+  --p-two:   #f5a623;
+  --p-binary:#16a085;
+  --p-tree:  #8e44ad;
+  --p-graph: #2980b9;
+  --p-dp:    #c0392b;
+  --p-heap:  #d35400;
+  --p-hash:  #27ae60;
+  --p-stack: #2c3e50;
+  --p-interval: #1abc9c;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Figtree', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Paper texture */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(180,170,155,0.15) 28px);
+  pointer-events:none; z-index:0;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top:0; z-index:200;
+  background: rgba(245,240,232,0.95);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--ink);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  height: 56px;
+}
+
+.nav-left { display:flex; align-items:center; gap:16px; }
+
+.back-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-dim);
+  text-decoration: none;
+  letter-spacing: 1px;
+  display:flex; align-items:center; gap:6px;
+  transition: color .15s;
+}
+.back-btn:hover { color: var(--accent); }
+
+.nav-title {
+  font-family: 'Instrument Serif', serif;
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.nav-right {
+  display:flex; align-items:center; gap:16px;
+}
+
+.progress-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-dim);
+}
+
+.progress-pill {
+  height: 6px; width: 120px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height:100%;
+  background: var(--accent);
+  border-radius:3px;
+  transition: width .4s ease;
+}
+
+/* ── HERO ── */
+.hero {
+  position:relative; z-index:1;
+  padding: 48px 32px 32px;
+  display:flex; align-items:flex-end;
+  justify-content:space-between; flex-wrap:wrap; gap:24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-left {}
+
+.hero-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-family: 'Instrument Serif', serif;
+  font-size: clamp(36px,6vw,64px);
+  line-height: 1.0;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+
+h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.hero-sub {
+  font-size: 14px;
+  color: var(--ink-dim);
+  max-width: 420px;
+  line-height: 1.7;
+}
+
+.hero-stats {
+  display:flex; gap:32px; flex-wrap:wrap;
+}
+
+.hstat {
+  text-align:right;
+}
+
+.hstat-n {
+  font-family:'Instrument Serif',serif;
+  font-size:42px;
+  color:var(--ink);
+  line-height:1;
+}
+
+.hstat-l {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:var(--ink-faint);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* ── FILTER ROW ── */
+.filters {
+  position:relative; z-index:1;
+  display:flex; gap:0;
+  overflow-x:auto;
+  border-bottom: 2px solid var(--ink);
+  padding: 0 32px;
+  scrollbar-width:none;
+}
+.filters::-webkit-scrollbar { display:none; }
+
+.filter-tab {
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:14px 18px;
+  border:none; background:transparent;
+  color:var(--ink-dim);
+  cursor:pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom:-2px;
+  white-space:nowrap;
+  transition:color .15s, border-color .15s;
+  position:relative;
+}
+
+.filter-tab:hover { color:var(--ink); }
+.filter-tab.active { color:var(--ink); border-bottom-color: var(--accent); }
+
+.tab-dot {
+  display:inline-block;
+  width:7px; height:7px;
+  border-radius:50%;
+  margin-right:6px;
+  vertical-align:middle;
+}
+
+/* ── MAIN LAYOUT ── */
+.main {
+  position:relative; z-index:1;
+  display:grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 56px - 100px);
+}
+
+@media(max-width:800px){
+  .main { grid-template-columns: 1fr; }
+  .sidebar { display:none; }
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  border-right: 1px solid var(--border);
+  padding: 24px 0;
+  overflow-y:auto;
+  position:sticky;
+  top:56px;
+  height:calc(100vh - 56px);
+}
+
+.sidebar-section {
+  padding: 0 20px 20px;
+}
+
+.sidebar-label {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  margin-bottom:10px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.sidebar-label:first-child { border-top:none; padding-top:0; }
+
+.sidebar-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 8px 10px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:background .15s;
+  margin-bottom:2px;
+}
+.sidebar-item:hover { background:rgba(0,0,0,0.05); }
+.sidebar-item.active { background: var(--ink); color:#fff; }
+
+.sidebar-item-left {
+  display:flex; align-items:center; gap:8px;
+  font-size:13px; font-weight:500;
+}
+
+.sidebar-count {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color: var(--ink-faint);
+}
+.sidebar-item.active .sidebar-count { color:rgba(255,255,255,0.5); }
+
+.pattern-pip {
+  width:8px; height:8px; border-radius:50%;
+}
+
+/* ── CARD STAGE ── */
+.stage {
+  padding: 40px 48px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:32px;
+}
+
+/* Flashcard */
+.flashcard-wrap {
+  width: 100%;
+  max-width: 680px;
+  perspective: 1400px;
+}
+
+.flashcard {
+  width:100%; height:420px;
+  position:relative;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(.4,0,.2,1);
+  cursor:pointer;
+}
+
+.flashcard.flipped { transform: rotateY(180deg); }
+
+.card-face {
+  position:absolute; inset:0;
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  border-radius:4px;
+  border: 2px solid var(--ink);
+  overflow:hidden;
+  display:flex; flex-direction:column;
+}
+
+/* FRONT */
+.card-front {
+  background: var(--card-front);
+  color:#fff;
+}
+
+.card-front-top {
+  padding:24px 28px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display:flex; align-items:center; justify-content:space-between;
+}
+
+.card-pattern-badge {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  padding:4px 10px;
+  border-radius:2px;
+  border:1px solid;
+}
+
+.card-num-badge {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:rgba(255,255,255,0.3);
+}
+
+.card-front-body {
+  flex:1;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:32px 40px;
+  text-align:center;
+  gap:16px;
+}
+
+.card-question-label {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:2px;
+  color:rgba(255,255,255,0.3);
+  text-transform:uppercase;
+}
+
+.card-question {
+  font-family:'Instrument Serif',serif;
+  font-size:clamp(20px,3vw,28px);
+  line-height:1.3;
+  color:#fff;
+}
+
+.card-hint {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:rgba(255,255,255,0.25);
+  margin-top:8px;
+}
+
+.flip-cue {
+  padding:16px 28px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  border-top:1px solid rgba(255,255,255,0.06);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:rgba(255,255,255,0.2);
+  letter-spacing:1px;
+}
+
+/* BACK */
+.card-back {
+  background:#fff;
+  transform: rotateY(180deg);
+  color: var(--ink);
+}
+
+.card-back-top {
+  padding:16px 24px;
+  border-bottom: 2px solid var(--ink);
+  display:flex; align-items:center; justify-content:space-between;
+}
+
+.card-back-title {
+  font-family:'Instrument Serif',serif;
+  font-size:16px;
+  color:var(--ink);
+}
+
+.card-back-body {
+  flex:1;
+  padding:20px 24px;
+  overflow-y:auto;
+  display:flex; flex-direction:column; gap:14px;
+}
+
+.back-section h4 {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+
+.back-section p {
+  font-size:13px;
+  line-height:1.7;
+  color:var(--ink);
+}
+
+.back-code {
+  background: var(--card-front);
+  color:#a8d8a8;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  line-height:1.7;
+  padding:12px 16px;
+  border-radius:3px;
+  overflow-x:auto;
+  white-space:pre;
+}
+
+.signals-list {
+  display:flex; flex-wrap:wrap; gap:6px;
+}
+
+.signal-chip {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  padding:3px 9px;
+  border-radius:2px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--ink-dim);
+}
+
+.complexity-row {
+  display:flex; gap:16px;
+}
+
+.cplx {
+  flex:1;
+  border:1px solid var(--border);
+  padding:8px 12px;
+  border-radius:3px;
+  text-align:center;
+}
+
+.cplx-val {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:14px;
+  font-weight:600;
+  color:var(--ink);
+}
+
+.cplx-lbl {
+  font-size:10px;
+  color:var(--ink-faint);
+  margin-top:2px;
+}
+
+/* Controls row */
+.controls-row {
+  display:flex; gap:12px; align-items:center;
+  width:100%; max-width:680px;
+}
+
+.btn {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  letter-spacing:1px;
+  padding:10px 20px;
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  border:2px solid var(--ink);
+  background:transparent;
+  color:var(--ink);
+}
+
+.btn:hover { background:var(--ink); color:#fff; }
+
+.btn-primary {
+  background:var(--ink);
+  color:#fff;
+}
+.btn-primary:hover { background:var(--accent); border-color:var(--accent); }
+
+.btn-success {
+  border-color:var(--green);
+  color:var(--green);
+}
+.btn-success:hover { background:var(--green); color:#fff; }
+
+.btn-danger {
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.btn-danger:hover { background:var(--accent); color:#fff; }
+
+.btn-icon { font-size:14px; margin-right:4px; }
+
+.spacer { flex:1; }
+
+/* Score row */
+.score-row {
+  display:flex; gap:24px;
+  width:100%; max-width:680px;
+}
+
+.score-box {
+  flex:1;
+  border:1px solid var(--border);
+  padding:12px 16px;
+  border-radius:3px;
+  text-align:center;
+}
+
+.score-n {
+  font-family:'Instrument Serif',serif;
+  font-size:28px;
+  color:var(--ink);
+}
+
+.score-l {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:9px;
+  color:var(--ink-faint);
+  letter-spacing:1px;
+  text-transform:uppercase;
+}
+
+/* Pattern index grid */
+.pattern-grid {
+  width:100%;
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(180px,1fr));
+  gap:12px;
+  padding-top:8px;
+}
+
+.pattern-tile {
+  border:1px solid var(--border);
+  padding:16px;
+  border-radius:3px;
+  cursor:pointer;
+  transition:all .15s;
+  background:#fff;
+  position:relative;
+  overflow:hidden;
+}
+
+.pattern-tile::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:3px;
+  background:var(--tile-color, var(--ink));
+}
+
+.pattern-tile:hover {
+  border-color:var(--tile-color, var(--ink));
+  transform:translateY(-2px);
+  box-shadow:0 4px 16px rgba(0,0,0,0.08);
+}
+
+.tile-icon { font-size:22px; margin-bottom:8px; }
+
+.tile-name {
+  font-family:'Instrument Serif',serif;
+  font-size:15px;
+  color:var(--ink);
+  margin-bottom:4px;
+}
+
+.tile-count {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:var(--ink-faint);
+}
+
+/* Empty / done state */
+.done-screen {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:24px;
+  padding:60px 20px;
+  text-align:center;
+  width:100%; max-width:480px;
+}
+
+.done-screen.show { display:flex; }
+
+.done-emoji { font-size:64px; }
+
+.done-title {
+  font-family:'Instrument Serif',serif;
+  font-size:36px;
+  color:var(--ink);
+}
+
+.done-sub {
+  font-size:14px;
+  color:var(--ink-dim);
+  line-height:1.7;
+}
+
+/* Mode selector */
+.mode-tabs {
+  display:flex;
+  border:2px solid var(--ink);
+  border-radius:4px;
+  overflow:hidden;
+  width:100%; max-width:680px;
+}
+
+.mode-tab {
+  flex:1;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:9px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .15s;
+  color:var(--ink-dim);
+  border:none; background:transparent;
+  border-right:1px solid var(--ink);
+}
+.mode-tab:last-child { border-right:none; }
+.mode-tab.active { background:var(--ink); color:#fff; }
+.mode-tab:hover:not(.active) { background:var(--surface); }
+
+/* keyboard hint */
+.kb-hints {
+  display:flex; gap:16px; flex-wrap:wrap; justify-content:center;
+  width:100%; max-width:680px;
+}
+.kb-hint {
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10px;
+  color:var(--ink-faint);
+  display:flex; align-items:center; gap:6px;
+}
+kbd {
+  background:var(--surface);
+  border:1px solid var(--border);
+  padding:2px 6px;
+  border-radius:2px;
+  font-size:10px;
+  color:var(--ink-dim);
+}
+
+/* views */
+.view { display:none; }
+.view.active { display:flex; flex-direction:column; align-items:center; gap:24px; width:100%; }
+
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a class="back-btn" href="index.html">← Hub</a>
+    <div class="nav-title">Pattern Flashcards</div>
+  </div>
+  <div class="nav-right">
+    <span class="progress-text" id="progressText">0 / 0</span>
+    <div class="progress-pill"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">NeetCode 150 · Pattern Recognition</div>
+    <h1>Know the<br><em>Pattern,</em><br>Crack the Problem</h1>
+    <p class="hero-sub">Master the 10 core algorithmic patterns. Each flashcard teaches the trigger signals, template, complexity, and the interview angle.</p>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-n" id="totalCards">60</div>
+      <div class="hstat-l">Flashcards</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-n">10</div>
+      <div class="hstat-l">Patterns</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-n" id="masteredCount">0</div>
+      <div class="hstat-l">Mastered</div>
+    </div>
+  </div>
+</div>
+
+<!-- FILTER TABS -->
+<div class="filters" id="filterTabs"></div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar"></aside>
+
+  <!-- STAGE -->
+  <div class="stage">
+
+    <!-- MODE SELECTOR -->
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('study',this)">📖 Study All</button>
+      <button class="mode-tab" onclick="setMode('weak',this)">🎯 Weak Only</button>
+      <button class="mode-tab" onclick="setMode('browse',this)">🗂 Browse Patterns</button>
+    </div>
+
+    <!-- STUDY VIEW -->
+    <div class="view active" id="studyView">
+      <div class="score-row">
+        <div class="score-box"><div class="score-n" id="scoreKnow">0</div><div class="score-l">✓ Know It</div></div>
+        <div class="score-box"><div class="score-n" id="scoreStudy">0</div><div class="score-l">↻ Study More</div></div>
+        <div class="score-box"><div class="score-n" id="scoreLeft">0</div><div class="score-l">Remaining</div></div>
+      </div>
+
+      <div class="flashcard-wrap">
+        <div class="flashcard" id="flashcard" onclick="flipCard()">
+
+          <div class="card-face card-front" id="cardFront">
+            <div class="card-front-top">
+              <span class="card-pattern-badge" id="cardPatternBadge"></span>
+              <span class="card-num-badge" id="cardNumBadge"></span>
+            </div>
+            <div class="card-front-body">
+              <div class="card-question-label">Question</div>
+              <div class="card-question" id="cardQuestion"></div>
+              <div class="card-hint" id="cardHint"></div>
+            </div>
+            <div class="flip-cue">TAP TO REVEAL ANSWER ↻</div>
+          </div>
+
+          <div class="card-face card-back">
+            <div class="card-back-top">
+              <div class="card-back-title" id="backTitle"></div>
+              <div class="signals-list" id="backSignals"></div>
+            </div>
+            <div class="card-back-body" id="cardBackBody"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="controls-row">
+        <button class="btn btn-danger" onclick="markCard(false)"><span class="btn-icon">↻</span> Study More</button>
+        <div class="spacer"></div>
+        <button class="btn" onclick="prevCard()">← Prev</button>
+        <button class="btn btn-success" onclick="markCard(true)"><span class="btn-icon">✓</span> Know It</button>
+      </div>
+
+      <div class="kb-hints">
+        <span class="kb-hint"><kbd>Space</kbd> Flip card</span>
+        <span class="kb-hint"><kbd>→</kbd> Next</span>
+        <span class="kb-hint"><kbd>←</kbd> Previous</span>
+        <span class="kb-hint"><kbd>K</kbd> Know it</span>
+        <span class="kb-hint"><kbd>S</kbd> Study more</span>
+      </div>
+
+      <div class="done-screen" id="doneScreen">
+        <div class="done-emoji">🎉</div>
+        <div class="done-title">Round Complete!</div>
+        <div class="done-sub" id="doneSub"></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+          <button class="btn btn-primary" onclick="resetDeck(false)">Restart All Cards</button>
+          <button class="btn" onclick="resetDeck(true)">Review Weak Only</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BROWSE VIEW -->
+    <div class="view" id="browseView">
+      <div class="pattern-grid" id="patternGrid"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA
+// ─────────────────────────────────────────────
+const PATTERNS = [
+  { id:'slide',    name:'Sliding Window',      color:'#e94560', icon:'🪟', short:'slide' },
+  { id:'two',      name:'Two Pointers',         color:'#f5a623', icon:'👆', short:'2ptr'  },
+  { id:'binary',   name:'Binary Search',        color:'#16a085', icon:'🔍', short:'bsrch' },
+  { id:'tree',     name:'Trees & Recursion',    color:'#8e44ad', icon:'🌳', short:'tree'  },
+  { id:'graph',    name:'Graphs & BFS/DFS',     color:'#2980b9', icon:'🕸️', short:'graph' },
+  { id:'dp',       name:'Dynamic Programming',  color:'#c0392b', icon:'🧩', short:'dp'    },
+  { id:'heap',     name:'Heap / Priority Queue',color:'#d35400', icon:'⛰️', short:'heap'  },
+  { id:'hash',     name:'Hash Map / Set',       color:'#27ae60', icon:'#️⃣', short:'hash'  },
+  { id:'stack',    name:'Stack & Monotonic',    color:'#2c3e50', icon:'📚', short:'stack' },
+  { id:'interval', name:'Intervals & Merge',    color:'#1abc9c', icon:'📏', short:'intv'  },
+];
+
+const CARDS = [
+// ── SLIDING WINDOW ──────────────────────────
+{ id:1, pattern:'slide', q:'What is the Sliding Window pattern and when do you use it?',
+  hint:'Think: subarray, substring, contiguous',
+  title:'Sliding Window',
+  signals:['contiguous subarray','longest/shortest substring','max sum of size k','at most k distinct'],
+  what:'Maintain a window [L, R] over a linear structure. Expand R to include elements, shrink L to satisfy a constraint. Avoids re-computing overlapping subproblems — O(n) instead of O(n²).',
+  code:`# Fixed window (sum of size k)\nwindow_sum = sum(arr[:k])\nmax_sum = window_sum\nfor i in range(k, len(arr)):\n    window_sum += arr[i] - arr[i-k]\n    max_sum = max(max_sum, window_sum)`,
+  timeO:'O(n)', spaceO:'O(1)',
+  interview:'Longest Substring Without Repeating Characters — start here.' },
+
+{ id:2, pattern:'slide', q:'How do you handle a VARIABLE-size sliding window?',
+  hint:'Two pointers: R expands, L shrinks on violation',
+  title:'Variable Sliding Window',
+  signals:['longest/shortest with constraint','at most k','at least k'],
+  what:'Right pointer always moves forward. When invariant is violated, move Left pointer forward until invariant is restored. Classic: longest substring with at most k distinct characters.',
+  code:`def lengthOfLongestSubstring(s):\n    L = 0\n    freq = {}\n    best = 0\n    for R, ch in enumerate(s):\n        freq[ch] = freq.get(ch,0) + 1\n        while freq[ch] > 1:  # violation\n            freq[s[L]] -= 1\n            L += 1\n        best = max(best, R - L + 1)\n    return best`,
+  timeO:'O(n)', spaceO:'O(k)',
+  interview:'Why is this O(n) and not O(n²)? Each element enters and leaves the window exactly once.' },
+
+{ id:3, pattern:'slide', q:'Sliding window vs two pointers — what\'s the difference?',
+  hint:'One maintains a range; the other converges from both ends',
+  title:'Window vs Two Pointers',
+  signals:['pair sum in sorted array → two pointers','subarray/substring → sliding window'],
+  what:'Sliding Window: both pointers move in the same direction (left to right). Used for subarray/substring problems. Two Pointers: pointers start at opposite ends and converge. Used for sorted arrays, pair sums, palindromes.',
+  code:`# Two pointers (sorted, pair sum = target)\nL, R = 0, len(arr)-1\nwhile L < R:\n    s = arr[L] + arr[R]\n    if s == target: return [L,R]\n    elif s < target: L += 1\n    else: R -= 1`,
+  timeO:'O(n)', spaceO:'O(1)',
+  interview:'When can you NOT use sliding window? (Non-contiguous elements, non-linear constraints)' },
+
+{ id:4, pattern:'slide', q:'Minimum Window Substring — how do you approach it?',
+  hint:'Need + have counters',
+  title:'Min Window Substring',
+  signals:['minimum window containing all chars of t','smallest substring with all required'],
+  what:'Track how many unique chars from t you "need" vs how many you currently "have" (frequency met). Expand R until all needed chars satisfied, then shrink L as much as possible while still valid. Record minimum.',
+  code:`# Key insight: "formed" counter\nneed = Counter(t)\nhave, need_cnt = {}, len(need)\nformed = 0  # chars with required freq\nL = 0; res = ""\nfor R, ch in enumerate(s):\n    have[ch] = have.get(ch,0)+1\n    if ch in need and have[ch]==need[ch]:\n        formed += 1\n    while formed == need_cnt:\n        # update result, shrink L\n        ...`,
+  timeO:'O(n+m)', spaceO:'O(m)',
+  interview:'This is a Hard LC but the pattern is just variable window + two frequency maps.' },
+
+{ id:5, pattern:'slide', q:'Maximum sum subarray of size k — write the solution.',
+  hint:'Classic fixed-window warm-up',
+  title:'Max Sum Subarray (Fixed)',
+  signals:['fixed size k','maximum/minimum of all windows'],
+  what:'Initialize the first window, then slide: add the new right element, subtract the outgoing left element. One pass, O(n).',
+  code:`def maxSumSubarray(arr, k):\n    window = sum(arr[:k])\n    best = window\n    for i in range(k, len(arr)):\n        window += arr[i] - arr[i-k]\n        best = max(best, window)\n    return best`,
+  timeO:'O(n)', spaceO:'O(1)',
+  interview:'Follow-up: what if elements can be negative? Does the algorithm still work? Yes — just tracking the sum.' },
+
+{ id:6, pattern:'slide', q:'When does sliding window NOT work?',
+  hint:'What assumptions does the window rely on?',
+  title:'Sliding Window Limits',
+  signals:['non-contiguous selection','no monotonic property','2D problems'],
+  what:'Sliding window requires: 1) You work on contiguous subarrays/substrings. 2) There\'s a monotonic property — shrinking L improves the constraint (if you can\'t guarantee this, the shrinking step is wrong). 3) Linear structure (array/string).',
+  code:`# Fails: "max sum of k non-adjacent elements"\n# → Use DP instead\n\n# Fails: "number of subarrays with exactly k distinct"\n# → Trick: atMost(k) - atMost(k-1)\n# (transform to sliding window form)`,
+  timeO:'N/A', spaceO:'N/A',
+  interview:'"Exactly k" problems: transform to atMost(k) - atMost(k-1). This is the key insight for harder window problems.' },
+
+// ── TWO POINTERS ──────────────────────────
+{ id:7, pattern:'two', q:'What are the two main setups for Two Pointers?',
+  hint:'Same direction vs opposite direction',
+  title:'Two Pointer Setups',
+  signals:['sorted array','pair/triplet sum','remove duplicates in-place','palindrome check'],
+  what:'1) Opposite ends (L=0, R=n-1): converge toward middle. Use on SORTED arrays for pair sums, or for palindrome checks. 2) Same direction (slow/fast): fast explores ahead, slow marks valid position. Use for remove duplicates, cycle detection.',
+  code:`# Opposite: Two Sum II (sorted)\nL, R = 0, len(nums)-1\nwhile L < R:\n    if nums[L]+nums[R] == target: ...\n    elif nums[L]+nums[R] < target: L+=1\n    else: R-=1\n\n# Same dir: remove duplicates\nk = 1\nfor i in range(1,len(nums)):\n    if nums[i] != nums[k-1]:\n        nums[k] = nums[i]; k+=1`,
+  timeO:'O(n)', spaceO:'O(1)',
+  interview:'Why does the opposite-ends approach work only on sorted arrays? Because sorting guarantees moving L increases sum, moving R decreases it.' },
+
+{ id:8, pattern:'two', q:'3Sum — explain the approach and how you avoid duplicates.',
+  hint:'Fix one, two-pointer the rest',
+  title:'3Sum',
+  signals:['triplets summing to target','k-sum problems'],
+  what:'Sort the array. Fix index i, then run two-pointer on i+1 to n-1. Skip duplicate values of i to avoid duplicate triplets. Skip duplicate values of L and R after finding a valid triplet.',
+  code:`def threeSum(nums):\n    nums.sort()\n    res = []\n    for i,v in enumerate(nums):\n        if i > 0 and v == nums[i-1]: continue  # skip dup\n        L, R = i+1, len(nums)-1\n        while L < R:\n            s = v+nums[L]+nums[R]\n            if s == 0:\n                res.append([v,nums[L],nums[R]])\n                while L<R and nums[L]==nums[L+1]: L+=1\n                while L<R and nums[R]==nums[R-1]: R-=1\n                L+=1; R-=1\n            elif s < 0: L+=1\n            else: R-=1\n    return res`,
+  timeO:'O(n²)', spaceO:'O(1)',
+  interview:'Time is O(n²) not O(n³) because the inner two-pointer is O(n). Sorting costs O(n log n).' },
+
+{ id:9, pattern:'two', q:'Fast & slow pointer — what problems does it solve?',
+  hint:'Floyd\'s algorithm',
+  title:'Fast & Slow Pointers',
+  signals:['linked list cycle','find middle of list','detect cycle start','happy number'],
+  what:'Slow moves 1 step, fast moves 2 steps. If there\'s a cycle, they\'ll meet. To find cycle start: reset slow to head after meeting, move both 1 step at a time — they meet at cycle start.',
+  code:`# Detect cycle\ndef hasCycle(head):\n    slow = fast = head\n    while fast and fast.next:\n        slow = slow.next\n        fast = fast.next.next\n        if slow == fast: return True\n    return False\n\n# Find middle\nwhile fast and fast.next:\n    slow = slow.next\n    fast = fast.next.next\n# slow is now at middle`,
+  timeO:'O(n)', spaceO:'O(1)',
+  interview:'Why do they meet? After k steps in cycle, fast is 2k - k = k steps ahead of slow → gap closes by 1 each step.' },
+
+{ id:10, pattern:'two', q:'Container With Most Water — two pointer proof.',
+  hint:'Why is it safe to move the shorter pointer?',
+  title:'Container With Most Water',
+  signals:['two boundaries maximizing area','trap water'],
+  what:'Area = min(h[L], h[R]) * (R-L). Moving the taller pointer can only decrease or maintain width while height is still bounded by the shorter — so we\'d never improve. Move the shorter pointer instead to have any chance of improvement.',
+  code:`def maxArea(height):\n    L, R = 0, len(height)-1\n    res = 0\n    while L < R:\n        area = min(height[L],height[R]) * (R-L)\n        res = max(res, area)\n        if height[L] < height[R]: L+=1\n        else: R-=1\n    return res`,
+  timeO:'O(n)', spaceO:'O(1)',
+  interview:'The greedy proof: if h[L] < h[R], no pair (L, x) for x < R can be better — width shrinks, height bounded by h[L].' },
+
+// ── BINARY SEARCH ────────────────────────
+{ id:11, pattern:'binary', q:'Binary search template — the 3 variants.',
+  hint:'Left bound, right bound, exact match',
+  title:'Binary Search Template',
+  signals:['sorted array','rotated sorted','find first/last occurrence','search in matrix'],
+  what:'Template 1: exact match. Template 2: find leftmost (first true). Template 3: find rightmost (last true). The key decision: what does mid being too small/large tell us? Always define your invariant clearly.',
+  code:`# Template: find first position where cond(mid) is True\ndef binary_search(arr, target):\n    L, R = 0, len(arr)-1\n    res = -1\n    while L <= R:\n        mid = L + (R-L)//2  # avoid overflow\n        if arr[mid] == target:\n            res = mid; R = mid-1  # keep going left\n        elif arr[mid] < target: L = mid+1\n        else: R = mid-1\n    return res`,
+  timeO:'O(log n)', spaceO:'O(1)',
+  interview:'Why mid = L + (R-L)//2 not (L+R)//2? Prevents integer overflow in languages with fixed int size.' },
+
+{ id:12, pattern:'binary', q:'Binary search on the ANSWER — what does that mean?',
+  hint:'The search space is not the array itself',
+  title:'Binary Search on Answer',
+  signals:['minimum/maximum possible value','feasibility check','Koko eating bananas','capacity to ship packages'],
+  what:'Instead of searching for a value IN an array, search for the optimal VALUE (e.g. minimum speed). Define a feasibility function check(mid). If check(mid) is True, try smaller; else try larger. The answer space is monotonic.',
+  code:`# Koko eating bananas\ndef minEatingSpeed(piles, h):\n    def canFinish(speed):\n        return sum(ceil(p/speed) for p in piles) <= h\n    \n    L, R = 1, max(piles)\n    while L < R:\n        mid = (L+R)//2\n        if canFinish(mid): R = mid  # try slower\n        else: L = mid+1\n    return L`,
+  timeO:'O(n log m)', spaceO:'O(1)',
+  interview:'Signal: "find minimum X such that condition holds" or "find maximum X such that condition holds" → binary search on answer.' },
+
+{ id:13, pattern:'binary', q:'Search in a rotated sorted array — the key insight.',
+  hint:'One half is always sorted',
+  title:'Rotated Sorted Array Search',
+  signals:['rotated array','find min in rotated','search target in rotated'],
+  what:'At any mid point, one half is definitely sorted. Check which half is sorted, then determine if target falls in that range. If yes, search that half; otherwise search the other.',
+  code:`def search(nums, target):\n    L, R = 0, len(nums)-1\n    while L <= R:\n        mid = (L+R)//2\n        if nums[mid] == target: return mid\n        if nums[L] <= nums[mid]:  # left sorted\n            if nums[L] <= target < nums[mid]: R=mid-1\n            else: L=mid+1\n        else:  # right sorted\n            if nums[mid] < target <= nums[R]: L=mid+1\n            else: R=mid-1\n    return -1`,
+  timeO:'O(log n)', spaceO:'O(1)',
+  interview:'Duplicate elements break this — worst case O(n). Follow-up: "what if duplicates exist?"' },
+
+{ id:14, pattern:'binary', q:'Find minimum in rotated sorted array.',
+  hint:'Minimum is in the unsorted half',
+  title:'Find Min in Rotated Array',
+  signals:['minimum of rotated sorted array','find pivot'],
+  what:'The minimum element is at the rotation point. Compare nums[mid] with nums[R]. If nums[mid] > nums[R], the min is in the right half. Otherwise min is in left half (including mid).',
+  code:`def findMin(nums):\n    L, R = 0, len(nums)-1\n    while L < R:\n        mid = (L+R)//2\n        if nums[mid] > nums[R]:\n            L = mid+1  # min in right half\n        else:\n            R = mid    # min in left half incl. mid\n    return nums[L]`,
+  timeO:'O(log n)', spaceO:'O(1)',
+  interview:'Why compare with R not L? Comparing with L doesn\'t tell you which half contains the minimum.' },
+
+{ id:15, pattern:'binary', q:'When does binary search apply to non-array problems?',
+  hint:'Any monotone search space',
+  title:'Binary Search: Non-Array',
+  signals:['find threshold value','minimize max / maximize min','matrix with sorted rows and cols'],
+  what:'Binary search works on ANY monotone answer space. If increasing X makes the problem easier (or harder) in a consistent way, binary search the answer. Classic: minimize the maximum, maximize the minimum problems.',
+  code:`# Split Array Largest Sum\n# → minimize(maximum sum of any split)\ndef splitArray(nums, k):\n    def canSplit(maxSum):\n        count, cur = 1, 0\n        for n in nums:\n            if cur + n > maxSum:\n                count += 1; cur = 0\n            cur += n\n        return count <= k\n    \n    L,R = max(nums), sum(nums)\n    while L<R:\n        mid=(L+R)//2\n        if canSplit(mid): R=mid\n        else: L=mid+1\n    return L`,
+  timeO:'O(n log(sum))', spaceO:'O(1)',
+  interview:'"Minimize the maximum" or "maximize the minimum" → binary search on answer. Dead giveaway.' },
+
+// ── TREES & RECURSION ────────────────────
+{ id:16, pattern:'tree', q:'DFS on a binary tree — the 3 traversal orders and when to use each.',
+  hint:'Pre/In/Post — what gets processed when?',
+  title:'Tree DFS Traversals',
+  signals:['serialize tree','validate BST','path sum','tree height'],
+  what:'Preorder (root→left→right): serialize/copy tree, path problems. Inorder (left→root→right): BST in SORTED order. Postorder (left→right→root): delete tree, calculate heights, bottom-up aggregation.',
+  code:`def inorder(root):\n    if not root: return []\n    return inorder(root.left) + [root.val] + inorder(root.right)\n\n# Iterative inorder (interview favorite)\ndef inorderIter(root):\n    stack, res = [], []\n    cur = root\n    while cur or stack:\n        while cur: stack.append(cur); cur=cur.left\n        cur = stack.pop()\n        res.append(cur.val)\n        cur = cur.right\n    return res`,
+  timeO:'O(n)', spaceO:'O(h)',
+  interview:'Height h = O(log n) balanced, O(n) skewed. Iterative inorder is commonly asked in interviews.' },
+
+{ id:17, pattern:'tree', q:'How do you solve tree problems using the "return value" pattern?',
+  hint:'What does each recursive call return up to its parent?',
+  title:'Tree Return Value Pattern',
+  signals:['diameter of tree','max path sum','check balanced','count nodes'],
+  what:'Design what information each subtree needs to return to its parent. Often you return (answer_so_far, value_useful_to_parent). Classic: diameter needs depth returned up, but updates global max at each node.',
+  code:`def diameterOfBinaryTree(root):\n    res = [0]\n    def depth(node):\n        if not node: return 0\n        L = depth(node.left)\n        R = depth(node.right)\n        res[0] = max(res[0], L+R)  # update global\n        return 1 + max(L,R)       # return to parent\n    depth(root)\n    return res[0]`,
+  timeO:'O(n)', spaceO:'O(h)',
+  interview:'The insight: at each node, the diameter through that node = left depth + right depth. Visit every node once.' },
+
+{ id:18, pattern:'tree', q:'Lowest Common Ancestor (LCA) — explain the recursive approach.',
+  hint:'If p and q are on different sides, current node is LCA',
+  title:'Lowest Common Ancestor',
+  signals:['find LCA of two nodes','path between two nodes'],
+  what:'If current node is p or q, return it. Otherwise recurse left and right. If both return non-null, current node is LCA. If only one side returns non-null, that\'s the LCA.',
+  code:`def lowestCommonAncestor(root, p, q):\n    if not root or root==p or root==q:\n        return root\n    left  = lowestCommonAncestor(root.left,  p, q)\n    right = lowestCommonAncestor(root.right, p, q)\n    if left and right:\n        return root   # p and q on different sides\n    return left or right  # both on one side`,
+  timeO:'O(n)', spaceO:'O(h)',
+  interview:'This works for any binary tree (not just BST). For BST, use BST property to navigate directly — O(h).' },
+
+{ id:19, pattern:'tree', q:'Level-order traversal (BFS on trees) — when and how.',
+  hint:'Queue-based, process level by level',
+  title:'Tree BFS / Level Order',
+  signals:['level by level','minimum depth','right side view','zigzag traversal','connect level nodes'],
+  what:'Use a queue. At each step, process all nodes at current level (capture queue length before the inner loop). This ensures level-by-level processing. Dequeue node, add its children.',
+  code:`from collections import deque\ndef levelOrder(root):\n    if not root: return []\n    q = deque([root])\n    res = []\n    while q:\n        level = []\n        for _ in range(len(q)):  # key: snapshot length\n            node = q.popleft()\n            level.append(node.val)\n            if node.left:  q.append(node.left)\n            if node.right: q.append(node.right)\n        res.append(level)\n    return res`,
+  timeO:'O(n)', spaceO:'O(w)',
+  interview:'W = max width of tree. For perfect binary tree, last level has n/2 nodes, so space is O(n).' },
+
+{ id:20, pattern:'tree', q:'Validate Binary Search Tree — the common mistake.',
+  hint:'Inorder traversal isn\'t enough for all cases',
+  title:'Validate BST',
+  signals:['valid BST check','BST property'],
+  what:'WRONG: just check left < root < right. This fails for subtrees — a node in the right subtree must be greater than ALL ancestors, not just its parent. CORRECT: pass min/max bounds down, updating as you recurse.',
+  code:`def isValidBST(root, lo=float('-inf'), hi=float('inf')):\n    if not root: return True\n    if not (lo < root.val < hi): return False\n    return (isValidBST(root.left,  lo, root.val) and\n            isValidBST(root.right, root.val, hi))`,
+  timeO:'O(n)', spaceO:'O(h)',
+  interview:'Classic gotcha. The bounds approach is the cleanest. Alternatively: inorder gives sorted sequence — check if it\'s strictly increasing.' },
+
+// ── GRAPHS ───────────────────────────────
+{ id:21, pattern:'graph', q:'Graph DFS vs BFS — when to use each?',
+  hint:'Depth vs breadth, shortest path vs reachability',
+  title:'Graph DFS vs BFS',
+  signals:['shortest path in unweighted graph → BFS','reachability/connected components → either','topological sort → DFS'],
+  what:'BFS: guarantees shortest path in unweighted graph. Use when you need minimum steps. DFS: simpler recursion, uses less memory for wide graphs. Use for cycle detection, topological sort, connected components.',
+  code:`# BFS (shortest path)\nfrom collections import deque\ndef bfs(graph, start):\n    visited = {start}\n    q = deque([(start, 0)])\n    while q:\n        node, dist = q.popleft()\n        for nei in graph[node]:\n            if nei not in visited:\n                visited.add(nei)\n                q.append((nei, dist+1))\n\n# DFS\ndef dfs(node, visited, graph):\n    visited.add(node)\n    for nei in graph[node]:\n        if nei not in visited:\n            dfs(nei, visited, graph)`,
+  timeO:'O(V+E)', spaceO:'O(V)',
+  interview:'Why does BFS guarantee shortest path? It explores nodes in order of distance — level by level.' },
+
+{ id:22, pattern:'graph', q:'Number of Islands — explain the approach.',
+  hint:'Flood fill — DFS/BFS to mark visited',
+  title:'Number of Islands (Grid DFS)',
+  signals:['count connected components in grid','flood fill','surrounded regions','max area of island'],
+  what:'Iterate every cell. When you find a \'1\', increment count and DFS/BFS to mark all connected \'1\'s as visited (change to \'0\' or use visited set). Each DFS/BFS call consumes one island.',
+  code:`def numIslands(grid):\n    if not grid: return 0\n    rows, cols = len(grid), len(grid[0])\n    count = 0\n    def dfs(r, c):\n        if r<0 or r>=rows or c<0 or c>=cols: return\n        if grid[r][c] != '1': return\n        grid[r][c] = '0'  # mark visited\n        dfs(r+1,c); dfs(r-1,c)\n        dfs(r,c+1); dfs(r,c-1)\n    for r in range(rows):\n        for c in range(cols):\n            if grid[r][c] == '1':\n                count += 1; dfs(r,c)\n    return count`,
+  timeO:'O(m×n)', spaceO:'O(m×n)',
+  interview:'Modifying the grid as the visited set is clean but destructive. Use a set if you must preserve the grid.' },
+
+{ id:23, pattern:'graph', q:'Topological sort — two methods.',
+  hint:'Kahn\'s (BFS) vs DFS with post-order',
+  title:'Topological Sort',
+  signals:['course prerequisites','build order','task scheduling with dependencies'],
+  what:'Method 1 (Kahn\'s BFS): track in-degrees, start with 0 in-degree nodes, reduce neighbors\' in-degree, add new 0-in-degree nodes to queue. Method 2 (DFS): postorder DFS, push to stack after all descendants visited.',
+  code:`# Kahn's Algorithm\nfrom collections import deque, defaultdict\ndef topoSort(n, prereqs):\n    indeg = [0]*n\n    adj = defaultdict(list)\n    for a,b in prereqs:\n        adj[b].append(a); indeg[a]+=1\n    q = deque(i for i in range(n) if indeg[i]==0)\n    order = []\n    while q:\n        node = q.popleft(); order.append(node)\n        for nei in adj[node]:\n            indeg[nei]-=1\n            if indeg[nei]==0: q.append(nei)\n    return order if len(order)==n else []  # [] = cycle`,
+  timeO:'O(V+E)', spaceO:'O(V+E)',
+  interview:'If resulting order length ≠ n, there\'s a cycle → impossible to complete all courses.' },
+
+{ id:24, pattern:'graph', q:'Union-Find (Disjoint Set) — what problems does it solve?',
+  hint:'Dynamic connectivity',
+  title:'Union-Find',
+  signals:['number of connected components','detect cycle in undirected graph','redundant connection','accounts merge'],
+  what:'Maintain a "parent" array. Find(x): chase parents to root (with path compression). Union(x,y): merge the smaller tree into the larger (union by rank). Both operations are effectively O(1) amortized.',
+  code:`class UnionFind:\n    def __init__(self, n):\n        self.par = list(range(n))\n        self.rank = [1]*n\n    def find(self, x):\n        while x != self.par[x]:\n            self.par[x] = self.par[self.par[x]]  # path compress\n            x = self.par[x]\n        return x\n    def union(self, x, y):\n        px, py = self.find(x), self.find(y)\n        if px==py: return False  # already connected\n        if self.rank[px] < self.rank[py]: px,py = py,px\n        self.par[py] = px\n        self.rank[px] += self.rank[py]\n        return True`,
+  timeO:'O(α(n)) ≈ O(1)', spaceO:'O(n)',
+  interview:'α is the inverse Ackermann function — essentially constant. UF is faster than DFS for repeated connectivity queries.' },
+
+{ id:25, pattern:'graph', q:'Dijkstra\'s algorithm — when and how.',
+  hint:'Shortest path in weighted graph (non-negative weights)',
+  title:'Dijkstra\'s Algorithm',
+  signals:['shortest path weighted graph','network delay time','cheapest flights'],
+  what:'Use a min-heap. Start with source dist=0. Pop minimum distance node, relax its neighbors. Skip if already visited (processed at minimum distance). Works only with non-negative edge weights.',
+  code:`import heapq\ndef dijkstra(n, edges, src):\n    adj = defaultdict(list)\n    for u,v,w in edges: adj[u].append((v,w))\n    dist = {i:float('inf') for i in range(n)}\n    dist[src] = 0\n    heap = [(0, src)]\n    while heap:\n        d, u = heapq.heappop(heap)\n        if d > dist[u]: continue  # stale entry\n        for v,w in adj[u]:\n            if dist[u]+w < dist[v]:\n                dist[v] = dist[u]+w\n                heapq.heappush(heap,(dist[v],v))\n    return dist`,
+  timeO:'O((V+E) log V)', spaceO:'O(V+E)',
+  interview:'Why does it fail with negative weights? A negative edge could make a "visited" node reachable at lower cost. Use Bellman-Ford for negative weights.' },
+
+// ── DYNAMIC PROGRAMMING ──────────────────
+{ id:26, pattern:'dp', q:'The two questions to identify a DP problem.',
+  hint:'Optimal substructure + overlapping subproblems',
+  title:'Identifying DP Problems',
+  signals:['count ways to...','minimum/maximum cost','can you reach...','longest increasing subsequence'],
+  what:'DP applies when: 1) Optimal Substructure — optimal solution built from optimal subproblem solutions. 2) Overlapping Subproblems — same subproblem solved multiple times (naive recursion repeats work). Keywords: "minimum/maximum", "count number of ways", "is it possible".',
+  code:`# Signal words → DP\n"minimum cost to..."      → DP\n"number of ways to..."    → DP\n"longest ... subsequence" → DP\n"can you reach..."        → DP\n\n# H.R.C. Framework for DP:\n# H - What is the subproblem? (dp[i] means...)\n# R - Recurrence relation (dp[i] = f(dp[i-1]...))\n# C - Base cases`,
+  timeO:'Problem dependent', spaceO:'O(n) to O(n²)',
+  interview:'Start with top-down (memoized recursion) — it\'s easier to reason about. Convert to bottom-up for space optimization.' },
+
+{ id:27, pattern:'dp', q:'1D DP pattern: Climbing Stairs / House Robber family.',
+  hint:'dp[i] depends on previous 1-2 states',
+  title:'1D DP (Linear)',
+  signals:['stairs/steps problem','adjacent constraint','fibonacci-like','coin change'],
+  what:'dp[i] = some function of dp[i-1], dp[i-2], etc. The recurrence only looks back a fixed number of steps. Often space-optimizable to O(1) using two variables instead of full array.',
+  code:`# House Robber: can't rob adjacent houses\ndef rob(nums):\n    # dp[i] = max money robbing first i houses\n    prev2, prev1 = 0, 0\n    for n in nums:\n        curr = max(prev1, prev2 + n)\n        prev2, prev1 = prev1, curr\n    return prev1\n\n# Coin Change: min coins to make amount\ndp = [float('inf')] * (amount+1)\ndp[0] = 0\nfor coin in coins:\n    for i in range(coin, amount+1):\n        dp[i] = min(dp[i], dp[i-coin]+1)`,
+  timeO:'O(n) or O(n×k)', spaceO:'O(1) or O(n)',
+  interview:'Coin change is unbounded knapsack. Recognize the knapsack variant — 0/1 vs unbounded changes the loop direction.' },
+
+{ id:28, pattern:'dp', q:'2D DP pattern: grid path, edit distance, LCS.',
+  hint:'dp[i][j] = answer using first i of A and first j of B',
+  title:'2D DP',
+  signals:['two sequences','grid paths','edit distance','LCS/LIS','interleaving strings'],
+  what:'dp[i][j] represents the answer for subproblems involving i elements of sequence A and j elements of sequence B (or cell [i][j] in a grid). Fill the table row by row.',
+  code:`# Longest Common Subsequence\ndef lcs(s1, s2):\n    m, n = len(s1), len(s2)\n    dp = [[0]*(n+1) for _ in range(m+1)]\n    for i in range(1,m+1):\n        for j in range(1,n+1):\n            if s1[i-1]==s2[j-1]:\n                dp[i][j] = dp[i-1][j-1]+1\n            else:\n                dp[i][j] = max(dp[i-1][j], dp[i][j-1])\n    return dp[m][n]`,
+  timeO:'O(m×n)', spaceO:'O(m×n) → O(n) with rolling',
+  interview:'Rolling array optimization: since dp[i][j] only needs row i-1, keep only 2 rows or even 1 row with careful updates.' },
+
+{ id:29, pattern:'dp', q:'Longest Increasing Subsequence — two approaches and their complexities.',
+  hint:'O(n²) DP vs O(n log n) binary search',
+  title:'Longest Increasing Subsequence',
+  signals:['LIS','longest non-decreasing subsequence','Russian doll envelopes'],
+  what:'O(n²) DP: dp[i] = length of LIS ending at index i. O(n log n) patience sorting: maintain "tails" array — tails[i] = smallest tail element of all LIS of length i+1. Binary search to find position to replace.',
+  code:`# O(n²) DP\ndef lengthOfLIS(nums):\n    dp = [1]*len(nums)\n    for i in range(len(nums)):\n        for j in range(i):\n            if nums[j] < nums[i]:\n                dp[i] = max(dp[i], dp[j]+1)\n    return max(dp)\n\n# O(n log n)\nimport bisect\ndef lengthOfLIS(nums):\n    tails = []\n    for n in nums:\n        i = bisect.bisect_left(tails, n)\n        if i == len(tails): tails.append(n)\n        else: tails[i] = n\n    return len(tails)`,
+  timeO:'O(n²) or O(n log n)', spaceO:'O(n)',
+  interview:'The O(n log n) tails array doesn\'t store the actual LIS sequence — just its length. To reconstruct, use the O(n²) approach with parent pointers.' },
+
+{ id:30, pattern:'dp', q:'0/1 Knapsack pattern — recognize and solve.',
+  hint:'Include or exclude each item, can\'t reuse',
+  title:'0/1 Knapsack',
+  signals:['subset sum','partition equal subset','target sum','can you pick items summing to...'],
+  what:'Each item: include (take it) or exclude. dp[i][w] = can we achieve weight w using first i items? Key: iterate weights in REVERSE to prevent using an item twice.',
+  code:`# Subset Sum (0/1 Knapsack variant)\ndef canPartition(nums):\n    target = sum(nums)\n    if target % 2: return False\n    target //= 2\n    dp = {0}  # achievable sums\n    for n in nums:\n        dp = dp | {s+n for s in dp}\n    return target in dp\n\n# Classic 0/1 Knapsack\ndp = [False]*(target+1); dp[0]=True\nfor n in nums:\n    for j in range(target, n-1, -1):  # REVERSE!\n        dp[j] |= dp[j-n]`,
+  timeO:'O(n×target)', spaceO:'O(target)',
+  interview:'Reverse iteration is the most-asked follow-up. Why reverse? Forward iteration would allow using the same item multiple times (unbounded knapsack).' },
+
+// ── HEAP ─────────────────────────────────
+{ id:31, pattern:'heap', q:'Min-heap vs Max-heap — Python implementation.',
+  hint:'Python only has min-heap; negate for max-heap',
+  title:'Heap Basics',
+  signals:['kth largest/smallest','top k frequent','merge k sorted lists','median of stream'],
+  what:'A heap is a complete binary tree where every parent ≤ children (min-heap) or ≥ (max-heap). heappush/heappop are O(log n). heapify is O(n). Python\'s heapq is min-heap only — negate values for max-heap.',
+  code:`import heapq\n\n# Min-heap\nheap = []\nheapq.heappush(heap, 3)\nheapq.heappush(heap, 1)\nprint(heapq.heappop(heap))  # 1 (minimum)\n\n# Max-heap trick: negate\nmax_heap = []\nheapq.heappush(max_heap, -5)\nheapq.heappush(max_heap, -1)\nprint(-heapq.heappop(max_heap))  # 5 (maximum)\n\n# heapify existing list\narr = [3,1,4,1,5]\nheapq.heapify(arr)  # O(n)`,
+  timeO:'O(log n) push/pop', spaceO:'O(n)',
+  interview:'When to use a heap: any time you repeatedly need the min or max of a changing collection.' },
+
+{ id:32, pattern:'heap', q:'Kth Largest Element — heap approach vs quickselect.',
+  hint:'Size-k min-heap maintains k largest',
+  title:'Kth Largest Element',
+  signals:['kth largest/smallest','top k elements','k closest points'],
+  what:'Heap approach: maintain a min-heap of size k. If heap size exceeds k, pop the minimum. Final heap top is the kth largest. O(n log k). Quickselect is O(n) average but O(n²) worst case.',
+  code:`def findKthLargest(nums, k):\n    heap = []\n    for n in nums:\n        heapq.heappush(heap, n)\n        if len(heap) > k:\n            heapq.heappop(heap)  # remove smallest\n    return heap[0]  # kth largest\n\n# Top K Frequent Elements\nfrom collections import Counter\ndef topKFrequent(nums, k):\n    count = Counter(nums)\n    return heapq.nlargest(k, count, key=count.get)`,
+  timeO:'O(n log k)', spaceO:'O(k)',
+  interview:'Quickselect is faster on average but has bad worst case. In interviews, heap approach is safer unless O(n) is explicitly required.' },
+
+{ id:33, pattern:'heap', q:'Median of a data stream — the two-heap trick.',
+  hint:'Max-heap of lower half + min-heap of upper half',
+  title:'Median Finder (Two Heaps)',
+  signals:['running median','median of stream','sliding window median'],
+  what:'Maintain two heaps: a max-heap (lower half) and min-heap (upper half). Ensure max_heap size is equal or one more than min_heap. Median is top of max_heap (odd) or average of both tops (even).',
+  code:`class MedianFinder:\n    def __init__(self):\n        self.lo = []  # max-heap (negate)\n        self.hi = []  # min-heap\n    \n    def addNum(self, num):\n        heapq.heappush(self.lo, -num)\n        # balance: lo top must be <= hi top\n        if self.hi and -self.lo[0] > self.hi[0]:\n            heapq.heappush(self.hi, -heapq.heappop(self.lo))\n        # size balance: lo has equal or +1\n        if len(self.lo) > len(self.hi)+1:\n            heapq.heappush(self.hi, -heapq.heappop(self.lo))\n        if len(self.hi) > len(self.lo):\n            heapq.heappush(self.lo, -heapq.heappop(self.hi))\n    \n    def findMedian(self):\n        if len(self.lo) > len(self.hi): return -self.lo[0]\n        return (-self.lo[0] + self.hi[0]) / 2`,
+  timeO:'O(log n) add, O(1) median', spaceO:'O(n)',
+  interview:'This is a Hard problem. The key insight: the two heaps maintain a "sorted split" of all numbers seen so far.' },
+
+// ── HASH MAP ─────────────────────────────
+{ id:34, pattern:'hash', q:'Two Sum — and the general hash map pattern.',
+  hint:'Store complement, not the element',
+  title:'Two Sum / HashMap Pattern',
+  signals:['pair summing to target','first seen position','group by property','count occurrences'],
+  what:'For pair problems, store what you\'ve seen and check for the complement. For grouping, use value→list. The hash map turns an O(n²) brute force into O(n) by making lookup O(1).',
+  code:`# Two Sum\ndef twoSum(nums, target):\n    seen = {}  # val → index\n    for i, n in enumerate(nums):\n        if target-n in seen:\n            return [seen[target-n], i]\n        seen[n] = i\n\n# Group Anagrams\nfrom collections import defaultdict\ndef groupAnagrams(strs):\n    groups = defaultdict(list)\n    for s in strs:\n        key = tuple(sorted(s))  # or Counter\n        groups[key].append(s)\n    return list(groups.values())`,
+  timeO:'O(n)', spaceO:'O(n)',
+  interview:'Two Sum is the archetype. Everything is a variation: 3Sum (fix one, Two Sum rest), pair with constraint, group by computed key.' },
+
+{ id:35, pattern:'hash', q:'Longest Consecutive Sequence — O(n) with a set.',
+  hint:'Only start counting from a sequence\'s first element',
+  title:'Longest Consecutive Sequence',
+  signals:['consecutive sequence','O(n) requirement with unsorted data'],
+  what:'Put all numbers in a set. Only start counting a sequence from a number x where x-1 is NOT in the set. This ensures each sequence is only counted once, giving O(n) overall.',
+  code:`def longestConsecutive(nums):\n    num_set = set(nums)\n    best = 0\n    for n in num_set:\n        if n-1 not in num_set:  # start of sequence\n            length = 1\n            while n+length in num_set:\n                length += 1\n            best = max(best, length)\n    return best`,
+  timeO:'O(n)', spaceO:'O(n)',
+  interview:'Why is it O(n) not O(n²)? Each number is visited at most twice: once in the outer loop, once in the inner while.' },
+
+// ── STACK ─────────────────────────────────
+{ id:36, pattern:'stack', q:'Monotonic stack — what is it and when do you use it?',
+  hint:'Maintain increasing or decreasing order',
+  title:'Monotonic Stack',
+  signals:['next greater element','next smaller element','largest rectangle in histogram','daily temperatures'],
+  what:'A stack that maintains elements in monotonically increasing or decreasing order. When a new element violates the order, pop elements and process them (they\'ve found their "next greater/smaller"). O(n) — each element pushed and popped once.',
+  code:`# Next Greater Element\ndef nextGreater(nums):\n    res = [-1]*len(nums)\n    stack = []  # indices, monotone decreasing values\n    for i, n in enumerate(nums):\n        while stack and nums[stack[-1]] < n:\n            idx = stack.pop()\n            res[idx] = n  # n is next greater for idx\n        stack.append(i)\n    return res\n\n# Daily Temperatures (same pattern)\n# Stack stores indices of unresolved days`,
+  timeO:'O(n)', spaceO:'O(n)',
+  interview:'The key insight: when we pop, we\'ve found the answer for that index. Each element is pushed and popped exactly once → O(n).' },
+
+{ id:37, pattern:'stack', q:'Valid Parentheses and bracket matching problems.',
+  hint:'Opening bracket → push; closing → pop and check',
+  title:'Bracket Matching (Stack)',
+  signals:['valid parentheses','balanced brackets','decode string','evaluate expression'],
+  what:'Push opening brackets. When a closing bracket is seen, pop and check if it matches. At the end, stack should be empty. Extend this pattern: push state (depth, partial string) for nested decode problems.',
+  code:`def isValid(s):\n    stack = []\n    match = {')':'(', ']':'[', '}':'{'}\n    for ch in s:\n        if ch in '([{':\n            stack.append(ch)\n        else:\n            if not stack or stack[-1] != match[ch]:\n                return False\n            stack.pop()\n    return not stack\n\n# Decode String: "3[a2[c]]" → "accaccacc"\n# Push (count, current_str) on '[', pop on ']'`,
+  timeO:'O(n)', spaceO:'O(n)',
+  interview:'Decode String is the harder variant — push (multiplier, accumulated_string) pairs onto the stack at each \'[\'.' },
+
+// ── INTERVALS ─────────────────────────────
+{ id:38, pattern:'interval', q:'Merge overlapping intervals — the canonical solution.',
+  hint:'Sort by start, check if next start ≤ current end',
+  title:'Merge Intervals',
+  signals:['merge overlapping intervals','meeting rooms','insert interval'],
+  what:'Sort by start time. Iterate: if current interval overlaps last merged (start ≤ last end), merge by extending end. Otherwise, add as new interval. Two intervals [a,b] and [c,d] overlap if c ≤ b.',
+  code:`def merge(intervals):\n    intervals.sort(key=lambda x: x[0])\n    merged = [intervals[0]]\n    for start, end in intervals[1:]:\n        if start <= merged[-1][1]:  # overlap\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged`,
+  timeO:'O(n log n)', spaceO:'O(n)',
+  interview:'Meeting Rooms I: any overlap? Meeting Rooms II: minimum rooms needed? (use min-heap of end times, or sort starts/ends separately)' },
+
+{ id:39, pattern:'interval', q:'Meeting Rooms II — minimum conference rooms needed.',
+  hint:'Count max concurrent overlapping intervals',
+  title:'Meeting Rooms II',
+  signals:['minimum rooms for all meetings','maximum concurrent events'],
+  what:'Method 1 (heap): sort by start, maintain min-heap of end times. If current start ≥ heap min, reuse that room (pop, push new end). Otherwise, add a new room. Method 2 (events): treat starts as +1, ends as -1, find maximum prefix sum.',
+  code:`def minMeetingRooms(intervals):\n    intervals.sort(key=lambda x: x[0])\n    heap = []  # end times of active meetings\n    for start, end in intervals:\n        if heap and heap[0] <= start:\n            heapq.heappop(heap)  # room freed\n        heapq.heappush(heap, end)\n    return len(heap)\n\n# Method 2: events\nevents = [(t,1) for s,e in intervals for t in [s,-1]] + ...\n# sort and scan prefix sum`,
+  timeO:'O(n log n)', spaceO:'O(n)',
+  interview:'The heap approach generalizes: "minimum resources to handle all tasks with time windows." The heap always contains active (overlapping) meetings.' },
+
+{ id:40, pattern:'interval', q:'Insert Interval — how to handle the three cases.',
+  hint:'Before, overlapping, after the new interval',
+  title:'Insert Interval',
+  signals:['insert new interval into sorted non-overlapping list','insert and merge'],
+  what:'Three phases: 1) Add all intervals that end before new interval starts. 2) Merge all intervals that overlap with new interval (extend new interval\'s bounds). 3) Add all remaining intervals.',
+  code:`def insert(intervals, newInterval):\n    res = []\n    i = 0\n    n = len(intervals)\n    # Phase 1: all ending before new starts\n    while i<n and intervals[i][1] < newInterval[0]:\n        res.append(intervals[i]); i+=1\n    # Phase 2: merge overlapping\n    while i<n and intervals[i][0] <= newInterval[1]:\n        newInterval[0] = min(newInterval[0], intervals[i][0])\n        newInterval[1] = max(newInterval[1], intervals[i][1])\n        i+=1\n    res.append(newInterval)\n    # Phase 3: rest\n    res.extend(intervals[i:])\n    return res`,
+  timeO:'O(n)', spaceO:'O(n)',
+  interview:'Unlike Merge Intervals, input is already sorted and non-overlapping — so O(n) is achievable without sorting.' },
+];
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let deck = [...CARDS];
+let idx = 0;
+let isFlipped = false;
+let scores = { know:0, study:0 };
+let marked = new Set();  // indices marked as "know"
+let weakSet = new Set();
+let currentMode = 'study';
+let currentFilter = 'all';
+
+// ─────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────
+function init() {
+  buildFilterTabs();
+  buildSidebar();
+  buildPatternGrid();
+  loadDeck();
+  renderCard();
+  updateProgress();
+}
+
+function buildFilterTabs() {
+  const cont = document.getElementById('filterTabs');
+  const allBtn = document.createElement('button');
+  allBtn.className = 'filter-tab active';
+  allBtn.innerHTML = 'All Patterns';
+  allBtn.dataset.id = 'all';
+  allBtn.onclick = () => filterByPattern('all', allBtn);
+  cont.appendChild(allBtn);
+
+  PATTERNS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'filter-tab';
+    btn.innerHTML = `<span class="tab-dot" style="background:${p.color}"></span>${p.name}`;
+    btn.dataset.id = p.id;
+    btn.onclick = () => filterByPattern(p.id, btn);
+    cont.appendChild(btn);
+  });
+}
+
+function buildSidebar() {
+  const sb = document.getElementById('sidebar');
+  sb.innerHTML = '';
+
+  const sec = document.createElement('div');
+  sec.className = 'sidebar-section';
+
+  const lbl = document.createElement('div');
+  lbl.className = 'sidebar-label';
+  lbl.textContent = 'Patterns';
+  sec.appendChild(lbl);
+
+  PATTERNS.forEach(p => {
+    const cnt = CARDS.filter(c => c.pattern === p.id).length;
+    const learnedCnt = [...marked].filter(i => deck[i]?.pattern === p.id || CARDS[i]?.pattern === p.id).length;
+    const item = document.createElement('div');
+    item.className = 'sidebar-item';
+    item.innerHTML = `
+      <div class="sidebar-item-left">
+        <span class="pattern-pip" style="background:${p.color}"></span>
+        ${p.name}
+      </div>
+      <span class="sidebar-count">${cnt}</span>
+    `;
+    item.onclick = () => filterByPattern(p.id, null);
+    sec.appendChild(item);
+  });
+
+  sb.appendChild(sec);
+}
+
+function buildPatternGrid() {
+  const grid = document.getElementById('patternGrid');
+  grid.innerHTML = '';
+  PATTERNS.forEach(p => {
+    const cnt = CARDS.filter(c => c.pattern === p.id).length;
+    const tile = document.createElement('div');
+    tile.className = 'pattern-tile';
+    tile.style.setProperty('--tile-color', p.color);
+    tile.innerHTML = `
+      <div class="tile-icon">${p.icon}</div>
+      <div class="tile-name">${p.name}</div>
+      <div class="tile-count">${cnt} cards</div>
+    `;
+    tile.onclick = () => { filterByPattern(p.id, null); setMode('study', null); };
+    grid.appendChild(tile);
+  });
+}
+
+function loadDeck() {
+  if (currentFilter === 'all') deck = [...CARDS];
+  else deck = CARDS.filter(c => c.pattern === currentFilter);
+
+  if (currentMode === 'weak') {
+    deck = deck.filter(c => weakSet.has(c.id));
+  }
+
+  idx = 0;
+  isFlipped = false;
+  scores = { know:0, study:0 };
+  document.getElementById('doneScreen').classList.remove('show');
+  document.querySelector('.flashcard-wrap').style.display = 'block';
+  document.querySelector('.controls-row').style.display = 'flex';
+  document.querySelector('.score-row').style.display = 'flex';
+  document.getElementById('totalCards').textContent = CARDS.length;
+}
+
+// ─────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────
+function renderCard() {
+  if (deck.length === 0 || idx >= deck.length) { showDone(); return; }
+  const card = deck[idx];
+  const pattern = PATTERNS.find(p => p.id === card.pattern);
+  const color = pattern?.color || '#888';
+
+  // Reset flip
+  isFlipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+
+  // Front
+  const badge = document.getElementById('cardPatternBadge');
+  badge.textContent = pattern?.short.toUpperCase() || card.pattern;
+  badge.style.color = color;
+  badge.style.borderColor = color;
+
+  document.getElementById('cardNumBadge').textContent = `${idx+1} / ${deck.length}`;
+  document.getElementById('cardQuestion').textContent = card.q;
+  document.getElementById('cardHint').textContent = card.hint ? `Hint: ${card.hint}` : '';
+
+  // Back
+  document.getElementById('backTitle').textContent = card.title;
+
+  const sigCont = document.getElementById('backSignals');
+  sigCont.innerHTML = card.signals.slice(0,3).map(s =>
+    `<span class="signal-chip">${s}</span>`).join('');
+
+  const body = document.getElementById('cardBackBody');
+  body.innerHTML = `
+    <div class="back-section">
+      <h4>Answer</h4>
+      <p>${card.what}</p>
+    </div>
+    <div class="back-section">
+      <h4>Code Template</h4>
+      <div class="back-code">${card.code}</div>
+    </div>
+    <div class="back-section">
+      <h4>Complexity</h4>
+      <div class="complexity-row">
+        <div class="cplx"><div class="cplx-val">${card.timeO}</div><div class="cplx-lbl">Time</div></div>
+        <div class="cplx"><div class="cplx-val">${card.spaceO}</div><div class="cplx-lbl">Space</div></div>
+      </div>
+    </div>
+    <div class="back-section">
+      <h4>Interview Angle</h4>
+      <p style="color:#e94560;font-size:13px">${card.interview}</p>
+    </div>
+  `;
+
+  updateScoreUI();
+}
+
+function updateScoreUI() {
+  document.getElementById('scoreKnow').textContent = scores.know;
+  document.getElementById('scoreStudy').textContent = scores.study;
+  document.getElementById('scoreLeft').textContent = deck.length - idx;
+}
+
+function updateProgress() {
+  const total = CARDS.length;
+  const done = marked.size;
+  document.getElementById('progressFill').style.width = (done/total*100) + '%';
+  document.getElementById('progressText').textContent = `${done} / ${total}`;
+  document.getElementById('masteredCount').textContent = done;
+}
+
+// ─────────────────────────────────────────────
+// INTERACTIONS
+// ─────────────────────────────────────────────
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('flashcard').classList.toggle('flipped', isFlipped);
+}
+
+function markCard(know) {
+  if (idx >= deck.length) return;
+  const card = deck[idx];
+  if (know) {
+    scores.know++;
+    marked.add(card.id);
+    weakSet.delete(card.id);
+  } else {
+    scores.study++;
+    weakSet.add(card.id);
+    marked.delete(card.id);
+  }
+  idx++;
+  updateProgress();
+  renderCard();
+}
+
+function prevCard() {
+  if (idx > 0) { idx--; renderCard(); }
+}
+
+function nextCard() {
+  idx = Math.min(idx+1, deck.length);
+  renderCard();
+}
+
+function showDone() {
+  document.querySelector('.flashcard-wrap').style.display = 'none';
+  document.querySelector('.controls-row').style.display = 'none';
+  document.getElementById('doneScreen').classList.add('show');
+
+  const weak = weakSet.size;
+  document.getElementById('doneSub').textContent =
+    `You know ${scores.know} of ${deck.length} cards. ${weak > 0 ? `${weak} card${weak>1?'s':''} need${weak===1?'s':''} more review.` : '🎯 Perfect round! All patterns mastered.'}`;
+}
+
+function resetDeck(weakOnly) {
+  if (weakOnly) { currentMode = 'weak'; }
+  else { currentMode = 'study'; weakSet.clear(); marked.clear(); }
+  loadDeck();
+  renderCard();
+  updateProgress();
+  document.getElementById('doneScreen').classList.remove('show');
+  document.querySelector('.flashcard-wrap').style.display = 'block';
+  document.querySelector('.controls-row').style.display = 'flex';
+  document.querySelector('.score-row').style.display = 'flex';
+}
+
+function filterByPattern(id, btn) {
+  currentFilter = id;
+  // update tabs
+  document.querySelectorAll('.filter-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.id === id);
+  });
+  // update sidebar
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  loadDeck();
+  renderCard();
+  if (currentMode === 'browse') return;
+  setView('studyView');
+}
+
+function setMode(mode, btn) {
+  currentMode = mode;
+  if (btn) {
+    document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  if (mode === 'browse') {
+    setView('browseView');
+  } else {
+    setView('studyView');
+    loadDeck();
+    renderCard();
+  }
+}
+
+function setView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Space') { e.preventDefault(); flipCard(); }
+  if (e.code === 'ArrowRight') nextCard();
+  if (e.code === 'ArrowLeft') prevCard();
+  if (e.key === 'k' || e.key === 'K') markCard(true);
+  if (e.key === 's' || e.key === 'S') markCard(false);
+});
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeetCode 150 Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080b12;
+  --surface: #0d1120;
+  --card: #111828;
+  --border: #1a2235;
+  --border2: #243048;
+  --text: #8899bb;
+  --white: #dde8ff;
+  --dim: #3d4f6e;
+
+  --easy:   #00e676;
+  --medium: #ffab00;
+  --hard:   #ff4060;
+  --done:   #00e676;
+
+  --c1: #4fc3f7; /* arrays */
+  --c2: #ce93d8; /* two pointers */
+  --c3: #80cbc4; /* sliding window */
+  --c4: #ffcc02; /* stack */
+  --c5: #ff8a65; /* binary search */
+  --c6: #a5d6a7; /* linked list */
+  --c7: #f48fb1; /* trees */
+  --c8: #90caf9; /* tries */
+  --c9: #ffab40; /* backtracking */
+  --c10:#b0bec5; /* heap */
+  --c11:#80deea; /* graphs */
+  --c12:#ef9a9a; /* DP1 */
+  --c13:#c5e1a5; /* DP2 */
+  --c14:#ffe082; /* greedy */
+  --c15:#bcaaa4; /* intervals */
+  --c16:#b39ddb; /* math */
+  --c17:#f0f4c3; /* bit */
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+}
+
+/* Scanline overlay */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.06) 2px,
+    rgba(0,0,0,0.06) 4px
+  );
+  pointer-events:none;
+  z-index:500;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top:0; z-index:200;
+  background: rgba(8,11,18,0.97);
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; gap:16px;
+  padding: 0 28px;
+  height: 52px;
+}
+
+.back-link {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  text-decoration: none;
+  letter-spacing: 1px;
+  transition: color .15s;
+}
+.back-link:hover { color: var(--c1); }
+
+.nav-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.nav-spacer { flex:1; }
+
+.global-progress {
+  display: flex; align-items: center; gap:12px;
+}
+
+.gp-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--c1);
+}
+
+.gp-bar {
+  width: 140px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.gp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--c1), #00e676);
+  border-radius: 2px;
+  transition: width .5s ease;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 36px 28px 28px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: center;
+}
+
+@media(max-width:700px){ .hero { grid-template-columns:1fr; } }
+
+.hero-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: clamp(32px,5vw,52px);
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.hero-title span {
+  color: var(--c1);
+  text-shadow: 0 0 20px rgba(79,195,247,0.4);
+}
+
+.hero-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--dim);
+  letter-spacing: 1px;
+}
+
+/* Donut chart */
+.donut-wrap {
+  display: flex; flex-direction:column; align-items:center; gap:8px;
+}
+
+.donut {
+  width: 120px; height: 120px;
+  position: relative;
+}
+
+.donut svg { transform: rotate(-90deg); }
+
+.donut-center {
+  position: absolute; inset:0;
+  display: flex; flex-direction:column;
+  align-items:center; justify-content:center;
+}
+
+.donut-num {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+}
+
+.donut-den {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.donut-legend {
+  display: flex; gap:16px;
+}
+
+.leg {
+  display:flex; align-items:center; gap:4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+}
+.leg-dot { width:7px;height:7px;border-radius:50%; }
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.stat-box {
+  background: var(--surface);
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.stat-n {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1;
+}
+
+.stat-l {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+/* ── CONTROLS ── */
+.controls {
+  display: flex; align-items: center; gap:12px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.search-box {
+  position: relative;
+}
+
+.search-box input {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  color: var(--white);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  padding: 8px 14px 8px 36px;
+  border-radius: 3px;
+  width: 220px;
+  outline: none;
+  transition: border-color .2s;
+}
+.search-box input:focus { border-color: var(--c1); }
+.search-box::before {
+  content: '⌕';
+  position: absolute; left:12px; top:50%;
+  transform: translateY(-50%);
+  color: var(--dim); font-size:16px;
+  pointer-events:none;
+}
+
+.filter-group {
+  display: flex; gap:6px; flex-wrap:wrap;
+}
+
+.pill {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: 2px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all .15s;
+}
+.pill:hover { color: var(--white); border-color: var(--border2); }
+.pill.active-easy   { border-color:var(--easy);   color:var(--easy); }
+.pill.active-medium { border-color:var(--medium); color:var(--medium); }
+.pill.active-hard   { border-color:var(--hard);   color:var(--hard); }
+.pill.active-all    { border-color:var(--c1); color:var(--c1); }
+.pill.active-done   { border-color:var(--done); color:var(--done); }
+.pill.active-todo   { border-color:var(--text); color:var(--white); }
+
+.ctrls-spacer { flex:1; }
+
+.reset-btn {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 6px 14px;
+  border-radius: 2px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all .15s;
+}
+.reset-btn:hover { border-color:var(--hard); color:var(--hard); }
+
+/* ── MAIN ── */
+.main {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+}
+
+@media(max-width:800px){
+  .main { grid-template-columns:1fr; }
+  .cat-sidebar { display:none; }
+}
+
+/* ── CATEGORY SIDEBAR ── */
+.cat-sidebar {
+  border-right: 1px solid var(--border);
+  padding: 20px 0;
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  overflow-y: auto;
+}
+
+.cat-item {
+  display: flex; align-items: center; gap:10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: background .15s;
+  border-left: 2px solid transparent;
+}
+
+.cat-item:hover { background: rgba(255,255,255,0.03); }
+.cat-item.active {
+  border-left-color: var(--cat-color, var(--c1));
+  background: rgba(79,195,247,0.05);
+}
+
+.cat-pip {
+  width: 8px; height: 8px; border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.cat-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  flex:1;
+  line-height: 1.2;
+}
+.cat-item.active .cat-name { color: var(--white); }
+
+.cat-prog {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+}
+
+/* ── PROBLEM LIST ── */
+.problem-area {
+  padding: 0;
+}
+
+.category-block {
+  border-bottom: 1px solid var(--border);
+}
+
+.cat-header {
+  display: flex; align-items: center; gap:12px;
+  padding: 16px 24px;
+  cursor: pointer;
+  position: sticky;
+  top: 52px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+  transition: background .15s;
+}
+.cat-header:hover { background: var(--surface); }
+
+.cat-header-pip {
+  width: 10px; height: 10px; border-radius: 50%;
+}
+
+.cat-header-name {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  flex: 1;
+}
+
+.cat-header-stats {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+}
+
+.cat-header-bar {
+  width: 80px; height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.cat-header-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width .4s;
+}
+
+.cat-toggle {
+  font-size: 12px;
+  color: var(--dim);
+  transition: transform .2s;
+}
+.cat-toggle.open { transform: rotate(90deg); }
+
+/* Problem rows */
+.problems-list {
+  display: none;
+}
+.problems-list.open { display: block; }
+
+.problem-row {
+  display: grid;
+  grid-template-columns: 40px 1fr auto auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  transition: background .1s;
+  cursor: pointer;
+}
+.problem-row:hover { background: rgba(255,255,255,0.025); }
+.problem-row.solved { background: rgba(0,230,118,0.04); }
+
+.prob-check {
+  width: 22px; height: 22px;
+  border-radius: 3px;
+  border: 1px solid var(--border2);
+  display: flex; align-items:center; justify-content:center;
+  font-size: 12px;
+  color: transparent;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+
+.problem-row.solved .prob-check {
+  background: rgba(0,230,118,0.15);
+  border-color: var(--easy);
+  color: var(--easy);
+}
+
+.prob-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+}
+
+.prob-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  transition: color .15s;
+}
+.problem-row:hover .prob-name { color: var(--white); }
+.problem-row.solved .prob-name { color: var(--white); }
+
+.diff-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  padding: 2px 7px;
+  border-radius: 2px;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+.diff-E { background: rgba(0,230,118,0.1);  color:var(--easy);   border:1px solid rgba(0,230,118,0.2); }
+.diff-M { background: rgba(255,171,0,0.1);  color:var(--medium); border:1px solid rgba(255,171,0,0.2); }
+.diff-H { background: rgba(255,64,96,0.1);  color:var(--hard);   border:1px solid rgba(255,64,96,0.2); }
+
+.lc-link {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  color: var(--dim);
+  text-decoration: none;
+  padding: 3px 8px;
+  border: 1px solid var(--border2);
+  border-radius: 2px;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.lc-link:hover { color: var(--c1); border-color: var(--c1); }
+
+/* No results */
+.no-results {
+  padding: 60px;
+  text-align: center;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--dim);
+  display: none;
+}
+
+/* Confetti */
+.confetti-container {
+  position: fixed; inset:0;
+  pointer-events: none;
+  z-index: 999;
+  overflow:hidden;
+}
+
+.conf {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  animation: confettiFall 1.2s ease-in forwards;
+}
+
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity:1; }
+  100% { transform: translateY(120vh) rotate(720deg); opacity:0; }
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-left: 3px solid var(--easy);
+  padding: 12px 24px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: var(--white);
+  border-radius: 3px;
+  z-index: 600;
+  transition: transform .3s ease;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="back-link" href="index.html">← HUB</a>
+  <div class="nav-title">NeetCode <span style="color:var(--c1)">150</span></div>
+  <div class="nav-spacer"></div>
+  <div class="global-progress">
+    <span class="gp-text" id="gpText">0 / 150</span>
+    <div class="gp-bar"><div class="gp-fill" id="gpFill" style="width:0%"></div></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-title">NEETCODE <span>150</span><br>TRACKER</div>
+    <div class="hero-sub">// TRACK · FILTER · CONQUER</div>
+  </div>
+  <div class="donut-wrap">
+    <div class="donut">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#1a2235" stroke-width="12"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#00e676" stroke-width="12"
+          stroke-dasharray="326.7" stroke-dashoffset="326.7"
+          id="donutCircle" stroke-linecap="round" style="transition:stroke-dashoffset .6s ease"/>
+      </svg>
+      <div class="donut-center">
+        <div class="donut-num" id="donutNum">0</div>
+        <div class="donut-den">/ 150</div>
+      </div>
+    </div>
+    <div class="donut-legend">
+      <div class="leg"><div class="leg-dot" style="background:var(--easy)"></div><span id="legE">0E</span></div>
+      <div class="leg"><div class="leg-dot" style="background:var(--medium)"></div><span id="legM">0M</span></div>
+      <div class="leg"><div class="leg-dot" style="background:var(--hard)"></div><span id="legH">0H</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row" id="statsRow"></div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <div class="search-box">
+    <input type="search" id="searchInput" placeholder="search problems..." oninput="applyFilters()">
+  </div>
+  <div class="filter-group">
+    <button class="pill active-all" onclick="setDiff('all',this)">ALL</button>
+    <button class="pill" onclick="setDiff('E',this)">EASY</button>
+    <button class="pill" onclick="setDiff('M',this)">MEDIUM</button>
+    <button class="pill" onclick="setDiff('H',this)">HARD</button>
+    <button class="pill" onclick="setDiff('done',this)">✓ DONE</button>
+    <button class="pill" onclick="setDiff('todo',this)">TODO</button>
+  </div>
+  <div class="ctrls-spacer"></div>
+  <button class="reset-btn" onclick="resetAll()">RESET ALL</button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <aside class="cat-sidebar" id="catSidebar"></aside>
+  <div class="problem-area" id="problemArea">
+    <div class="no-results" id="noResults">// no problems match your filter</div>
+  </div>
+</div>
+
+<div class="confetti-container" id="confetti"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA — All 150 NeetCode problems
+// ─────────────────────────────────────────────
+const CATEGORIES = [
+  { id:'arrays',      name:'Arrays & Hashing',     color:'#4fc3f7', icon:'[ ]' },
+  { id:'twoptr',      name:'Two Pointers',          color:'#ce93d8', icon:'↔'  },
+  { id:'sliding',     name:'Sliding Window',        color:'#80cbc4', icon:'▭'  },
+  { id:'stack',       name:'Stack',                 color:'#ffcc02', icon:'⏚'  },
+  { id:'bsearch',     name:'Binary Search',         color:'#ff8a65', icon:'⟨⟩' },
+  { id:'linked',      name:'Linked List',           color:'#a5d6a7', icon:'→→' },
+  { id:'trees',       name:'Trees',                 color:'#f48fb1', icon:'⋔'  },
+  { id:'tries',       name:'Tries',                 color:'#90caf9', icon:'T'  },
+  { id:'backtrack',   name:'Backtracking',          color:'#ffab40', icon:'↩'  },
+  { id:'heap',        name:'Heap / Priority Queue', color:'#b0bec5', icon:'△'  },
+  { id:'graphs',      name:'Graphs',                color:'#80deea', icon:'⬡'  },
+  { id:'advgraphs',   name:'Advanced Graphs',       color:'#ef9a9a', icon:'⬡⬡' },
+  { id:'dp1',         name:'1-D DP',                color:'#c5e1a5', icon:'▬'  },
+  { id:'dp2',         name:'2-D DP',                color:'#ffe082', icon:'▦'  },
+  { id:'greedy',      name:'Greedy',                color:'#bcaaa4', icon:'⚡'  },
+  { id:'intervals',   name:'Intervals',             color:'#b39ddb', icon:'‥'  },
+  { id:'math',        name:'Math & Geometry',       color:'#f0f4c3', icon:'∑'  },
+  { id:'bit',         name:'Bit Manipulation',      color:'#b39ddb', icon:'&'  },
+];
+
+// [name, difficulty (E/M/H), leetcode slug]
+const PROBLEMS = {
+  arrays: [
+    ['Contains Duplicate','E','contains-duplicate'],
+    ['Valid Anagram','E','valid-anagram'],
+    ['Two Sum','E','two-sum'],
+    ['Group Anagrams','M','group-anagrams'],
+    ['Top K Frequent Elements','M','top-k-frequent-elements'],
+    ['Encode and Decode Strings','M','encode-and-decode-strings'],
+    ['Product of Array Except Self','M','product-of-array-except-self'],
+    ['Valid Sudoku','M','valid-sudoku'],
+    ['Longest Consecutive Sequence','M','longest-consecutive-sequence'],
+  ],
+  twoptr: [
+    ['Valid Palindrome','E','valid-palindrome'],
+    ['Two Sum II','M','two-sum-ii-input-array-is-sorted'],
+    ['3Sum','M','3sum'],
+    ['Container With Most Water','M','container-with-most-water'],
+    ['Trapping Rain Water','H','trapping-rain-water'],
+  ],
+  sliding: [
+    ['Best Time to Buy and Sell Stock','E','best-time-to-buy-and-sell-stock'],
+    ['Longest Substring Without Repeating Chars','M','longest-substring-without-repeating-characters'],
+    ['Longest Repeating Character Replacement','M','longest-repeating-character-replacement'],
+    ['Permutation in String','M','permutation-in-string'],
+    ['Minimum Window Substring','H','minimum-window-substring'],
+    ['Sliding Window Maximum','H','sliding-window-maximum'],
+  ],
+  stack: [
+    ['Valid Parentheses','E','valid-parentheses'],
+    ['Min Stack','M','min-stack'],
+    ['Evaluate Reverse Polish Notation','M','evaluate-reverse-polish-notation'],
+    ['Generate Parentheses','M','generate-parentheses'],
+    ['Daily Temperatures','M','daily-temperatures'],
+    ['Car Fleet','M','car-fleet'],
+    ['Largest Rectangle in Histogram','H','largest-rectangle-in-histogram'],
+  ],
+  bsearch: [
+    ['Binary Search','E','binary-search'],
+    ['Search a 2D Matrix','M','search-a-2d-matrix'],
+    ['Koko Eating Bananas','M','koko-eating-bananas'],
+    ['Find Minimum in Rotated Sorted Array','M','find-minimum-in-rotated-sorted-array'],
+    ['Search in Rotated Sorted Array','M','search-in-rotated-sorted-array'],
+    ['Time Based Key-Value Store','M','time-based-key-value-store'],
+    ['Median of Two Sorted Arrays','H','median-of-two-sorted-arrays'],
+  ],
+  linked: [
+    ['Reverse Linked List','E','reverse-linked-list'],
+    ['Merge Two Sorted Lists','E','merge-two-sorted-lists'],
+    ['Reorder List','M','reorder-list'],
+    ['Remove Nth Node From End of List','M','remove-nth-node-from-end-of-list'],
+    ['Copy List with Random Pointer','M','copy-list-with-random-pointer'],
+    ['Add Two Numbers','M','add-two-numbers'],
+    ['Linked List Cycle','E','linked-list-cycle'],
+    ['Find the Duplicate Number','M','find-the-duplicate-number'],
+    ['LRU Cache','M','lru-cache'],
+    ['Merge K Sorted Lists','H','merge-k-sorted-lists'],
+    ['Reverse Nodes in k-Group','H','reverse-nodes-in-k-group'],
+  ],
+  trees: [
+    ['Invert Binary Tree','E','invert-binary-tree'],
+    ['Maximum Depth of Binary Tree','E','maximum-depth-of-binary-tree'],
+    ['Diameter of Binary Tree','E','diameter-of-binary-tree'],
+    ['Balanced Binary Tree','E','balanced-binary-tree'],
+    ['Same Tree','E','same-tree'],
+    ['Subtree of Another Tree','E','subtree-of-another-tree'],
+    ['Lowest Common Ancestor of BST','M','lowest-common-ancestor-of-a-binary-search-tree'],
+    ['Binary Tree Level Order Traversal','M','binary-tree-level-order-traversal'],
+    ['Binary Tree Right Side View','M','binary-tree-right-side-view'],
+    ['Count Good Nodes in Binary Tree','M','count-good-nodes-in-binary-tree'],
+    ['Validate Binary Search Tree','M','validate-binary-search-tree'],
+    ['Kth Smallest Element in BST','M','kth-smallest-element-in-a-bst'],
+    ['Construct Binary Tree from Preorder and Inorder','M','construct-binary-tree-from-preorder-and-inorder-traversal'],
+    ['Binary Tree Maximum Path Sum','H','binary-tree-maximum-path-sum'],
+    ['Serialize and Deserialize Binary Tree','H','serialize-and-deserialize-binary-tree'],
+  ],
+  tries: [
+    ['Implement Trie','M','implement-trie-prefix-tree'],
+    ['Design Add and Search Words Data Structure','M','design-add-and-search-words-data-structure'],
+    ['Word Search II','H','word-search-ii'],
+  ],
+  backtrack: [
+    ['Subsets','M','subsets'],
+    ['Combination Sum','M','combination-sum'],
+    ['Permutations','M','permutations'],
+    ['Subsets II','M','subsets-ii'],
+    ['Combination Sum II','M','combination-sum-ii'],
+    ['Word Search','M','word-search'],
+    ['Palindrome Partitioning','M','palindrome-partitioning'],
+    ['Letter Combinations of a Phone Number','M','letter-combinations-of-a-phone-number'],
+    ['N-Queens','H','n-queens'],
+  ],
+  heap: [
+    ['Kth Largest Element in a Stream','E','kth-largest-element-in-a-stream'],
+    ['Last Stone Weight','E','last-stone-weight'],
+    ['K Closest Points to Origin','M','k-closest-points-to-origin'],
+    ['Kth Largest Element in an Array','M','kth-largest-element-in-an-array'],
+    ['Task Scheduler','M','task-scheduler'],
+    ['Design Twitter','M','design-twitter'],
+    ['Find Median from Data Stream','H','find-median-from-data-stream'],
+  ],
+  graphs: [
+    ['Number of Islands','M','number-of-islands'],
+    ['Clone Graph','M','clone-graph'],
+    ['Max Area of Island','M','max-area-of-island'],
+    ['Pacific Atlantic Water Flow','M','pacific-atlantic-water-flow'],
+    ['Surrounded Regions','M','surrounded-regions'],
+    ['Rotting Oranges','M','rotting-oranges'],
+    ['Walls and Gates','M','walls-and-gates'],
+    ['Course Schedule','M','course-schedule'],
+    ['Course Schedule II','M','course-schedule-ii'],
+    ['Redundant Connection','M','redundant-connection'],
+    ['Number of Connected Components in Undirected Graph','M','number-of-connected-components-in-an-undirected-graph'],
+    ['Graph Valid Tree','M','graph-valid-tree'],
+    ['Word Ladder','H','word-ladder'],
+  ],
+  advgraphs: [
+    ['Reconstruct Itinerary','H','reconstruct-itinerary'],
+    ['Min Cost to Connect All Points','M','min-cost-to-connect-all-points'],
+    ['Network Delay Time','M','network-delay-time'],
+    ['Swim in Rising Water','H','swim-in-rising-water'],
+    ['Alien Dictionary','H','alien-dictionary'],
+    ['Cheapest Flights Within K Stops','M','cheapest-flights-within-k-stops'],
+  ],
+  dp1: [
+    ['Climbing Stairs','E','climbing-stairs'],
+    ['Min Cost Climbing Stairs','E','min-cost-climbing-stairs'],
+    ['House Robber','M','house-robber'],
+    ['House Robber II','M','house-robber-ii'],
+    ['Longest Palindromic Substring','M','longest-palindromic-substring'],
+    ['Palindromic Substrings','M','palindromic-substrings'],
+    ['Decode Ways','M','decode-ways'],
+    ['Coin Change','M','coin-change'],
+    ['Maximum Product Subarray','M','maximum-product-subarray'],
+    ['Word Break','M','word-break'],
+    ['Longest Increasing Subsequence','M','longest-increasing-subsequence'],
+    ['Partition Equal Subset Sum','M','partition-equal-subset-sum'],
+  ],
+  dp2: [
+    ['Unique Paths','M','unique-paths'],
+    ['Longest Common Subsequence','M','longest-common-subsequence'],
+    ['Best Time to Buy and Sell Stock with Cooldown','M','best-time-to-buy-and-sell-stock-with-cooldown'],
+    ['Coin Change II','M','coin-change-ii'],
+    ['Target Sum','M','target-sum'],
+    ['Interleaving String','M','interleaving-string'],
+    ['Longest Increasing Path in a Matrix','H','longest-increasing-path-in-a-matrix'],
+    ['Distinct Subsequences','H','distinct-subsequences'],
+    ['Edit Distance','H','edit-distance'],
+    ['Burst Balloons','H','burst-balloons'],
+    ['Regular Expression Matching','H','regular-expression-matching'],
+  ],
+  greedy: [
+    ['Maximum Subarray','M','maximum-subarray'],
+    ['Jump Game','M','jump-game'],
+    ['Jump Game II','M','jump-game-ii'],
+    ['Gas Station','M','gas-station'],
+    ['Hand of Straights','M','hand-of-straights'],
+    ['Merge Triplets to Form Target Triplet','M','merge-triplets-to-form-target-triplet'],
+    ['Partition Labels','M','partition-labels'],
+    ['Valid Parenthesis String','M','valid-parenthesis-string'],
+  ],
+  intervals: [
+    ['Insert Interval','M','insert-interval'],
+    ['Merge Intervals','M','merge-intervals'],
+    ['Non-overlapping Intervals','M','non-overlapping-intervals'],
+    ['Meeting Rooms','E','meeting-rooms'],
+    ['Meeting Rooms II','M','meeting-rooms-ii'],
+    ['Minimum Interval to Include Each Query','H','minimum-interval-to-include-each-query'],
+  ],
+  math: [
+    ['Rotate Image','M','rotate-image'],
+    ['Spiral Matrix','M','spiral-matrix'],
+    ['Set Matrix Zeroes','M','set-matrix-zeroes'],
+    ['Happy Number','E','happy-number'],
+    ['Plus One','E','plus-one'],
+    ['Pow(x, n)','M','powx-n'],
+    ['Multiply Strings','M','multiply-strings'],
+    ['Detect Squares','M','detect-squares'],
+  ],
+  bit: [
+    ['Single Number','E','single-number'],
+    ['Number of 1 Bits','E','number-of-1-bits'],
+    ['Counting Bits','E','counting-bits'],
+    ['Reverse Bits','E','reverse-bits'],
+    ['Missing Number','E','missing-number'],
+    ['Sum of Two Integers','M','sum-of-two-integers'],
+    ['Reverse Integer','M','reverse-integer'],
+  ],
+};
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+const STORAGE_KEY = 'neetcode150_progress';
+let solved = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+let diffFilter = 'all';
+let searchQuery = '';
+
+// ─────────────────────────────────────────────
+// BUILD UI
+// ─────────────────────────────────────────────
+function init() {
+  buildStats();
+  buildSidebar();
+  buildProblemList();
+  updateDonut();
+  updateGlobalProgress();
+}
+
+function buildStats() {
+  const cats = CATEGORIES;
+  const allProbs = Object.values(PROBLEMS).flat();
+  const total = allProbs.length;
+  const easy = allProbs.filter(p=>p[1]==='E').length;
+  const med  = allProbs.filter(p=>p[1]==='M').length;
+  const hard = allProbs.filter(p=>p[1]==='H').length;
+  const solvedTotal = solved.size;
+  const solvedE = [...solved].filter(id => {
+    const p = findProbById(id);
+    return p && p[1]==='E';
+  }).length;
+  const solvedM = [...solved].filter(id => {
+    const p = findProbById(id);
+    return p && p[1]==='M';
+  }).length;
+  const solvedH = [...solved].filter(id => {
+    const p = findProbById(id);
+    return p && p[1]==='H';
+  }).length;
+
+  const row = document.getElementById('statsRow');
+  row.innerHTML = `
+    <div class="stat-box"><div class="stat-n" style="color:var(--white)">${solvedTotal}<span style="color:var(--dim);font-size:16px">/${total}</span></div><div class="stat-l">TOTAL SOLVED</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:var(--easy)">${solvedE}<span style="color:var(--dim);font-size:16px">/${easy}</span></div><div class="stat-l">EASY</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:var(--medium)">${solvedM}<span style="color:var(--dim);font-size:16px">/${med}</span></div><div class="stat-l">MEDIUM</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:var(--hard)">${solvedH}<span style="color:var(--dim);font-size:16px">/${hard}</span></div><div class="stat-l">HARD</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:var(--c1)">${Math.round(solvedTotal/total*100)}<span style="font-size:16px">%</span></div><div class="stat-l">COMPLETE</div></div>
+  `;
+}
+
+function buildSidebar() {
+  const sb = document.getElementById('catSidebar');
+  sb.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const probs = PROBLEMS[cat.id] || [];
+    const solvedCnt = probs.filter(p => solved.has(probId(cat.id, p))).length;
+    const item = document.createElement('div');
+    item.className = 'cat-item';
+    item.style.setProperty('--cat-color', cat.color);
+    item.innerHTML = `
+      <div class="cat-pip" style="background:${cat.color}"></div>
+      <div class="cat-name">${cat.name}</div>
+      <div class="cat-prog" style="color:${solvedCnt===probs.length?'var(--easy)':'var(--dim)'}">${solvedCnt}/${probs.length}</div>
+    `;
+    item.onclick = () => {
+      const el = document.getElementById('cat-block-'+cat.id);
+      if (el) { el.scrollIntoView({behavior:'smooth', block:'start'}); }
+      document.querySelectorAll('.cat-item').forEach(i=>i.classList.remove('active'));
+      item.classList.add('active');
+    };
+    sb.appendChild(item);
+  });
+}
+
+function buildProblemList() {
+  const area = document.getElementById('problemArea');
+  // Clear existing category blocks
+  area.querySelectorAll('.category-block').forEach(b=>b.remove());
+
+  CATEGORIES.forEach(cat => {
+    const probs = PROBLEMS[cat.id] || [];
+    const block = document.createElement('div');
+    block.className = 'category-block';
+    block.id = 'cat-block-' + cat.id;
+
+    const solvedCnt = probs.filter(p=>solved.has(probId(cat.id,p))).length;
+    const pct = probs.length ? solvedCnt/probs.length*100 : 0;
+
+    block.innerHTML = `
+      <div class="cat-header" onclick="toggleCat('${cat.id}')">
+        <div class="cat-header-pip" style="background:${cat.color}"></div>
+        <div class="cat-header-name" style="color:${cat.color}">${cat.icon}&nbsp; ${cat.name}</div>
+        <div class="cat-header-stats" id="cat-stat-${cat.id}">${solvedCnt}/${probs.length}</div>
+        <div class="cat-header-bar">
+          <div class="cat-header-fill" id="cat-bar-${cat.id}" style="width:${pct}%;background:${cat.color}"></div>
+        </div>
+        <div class="cat-toggle open" id="cat-tog-${cat.id}">▶</div>
+      </div>
+      <div class="problems-list open" id="cat-list-${cat.id}"></div>
+    `;
+    area.appendChild(block);
+    renderProblems(cat.id, probs);
+  });
+}
+
+function renderProblems(catId, probs) {
+  const list = document.getElementById('cat-list-'+catId);
+  list.innerHTML = '';
+  const cat = CATEGORIES.find(c=>c.id===catId);
+
+  probs.forEach((p,i) => {
+    const id = probId(catId, p);
+    const isSolved = solved.has(id);
+    const row = document.createElement('div');
+    row.className = 'problem-row' + (isSolved ? ' solved' : '');
+    row.id = 'row-'+id;
+    row.dataset.diff = p[1];
+    row.dataset.name = p[0].toLowerCase();
+    row.dataset.cat = catId;
+    row.innerHTML = `
+      <div class="prob-check" id="chk-${id}">${isSolved?'✓':''}</div>
+      <div>
+        <div class="prob-num">#${String(i+1).padStart(2,'0')}</div>
+        <div class="prob-name">${p[0]}</div>
+      </div>
+      <div class="diff-badge diff-${p[1]}">${p[1]==='E'?'EASY':p[1]==='M'?'MEDIUM':'HARD'}</div>
+      <a class="lc-link" href="https://leetcode.com/problems/${p[2]}/" target="_blank" onclick="e=>e.stopPropagation()">LC ↗</a>
+    `;
+    row.onclick = (e) => {
+      if (e.target.classList.contains('lc-link') || e.target.tagName==='A') return;
+      toggleSolve(catId, p, id);
+    };
+    list.appendChild(row);
+  });
+}
+
+function toggleCat(catId) {
+  const list = document.getElementById('cat-list-'+catId);
+  const tog  = document.getElementById('cat-tog-'+catId);
+  list.classList.toggle('open');
+  tog.classList.toggle('open');
+}
+
+// ─────────────────────────────────────────────
+// INTERACTIONS
+// ─────────────────────────────────────────────
+function toggleSolve(catId, prob, id) {
+  if (solved.has(id)) {
+    solved.delete(id);
+    document.getElementById('row-'+id)?.classList.remove('solved');
+    const chk = document.getElementById('chk-'+id);
+    if(chk){ chk.textContent=''; }
+  } else {
+    solved.add(id);
+    document.getElementById('row-'+id)?.classList.add('solved');
+    const chk = document.getElementById('chk-'+id);
+    if(chk){ chk.textContent='✓'; }
+    spawnConfetti();
+    showToast(`✓ ${prob[0]} marked as solved`);
+  }
+  persist();
+  updateCatHeader(catId);
+  updateDonut();
+  updateGlobalProgress();
+  buildStats();
+  buildSidebar();
+}
+
+function updateCatHeader(catId) {
+  const probs = PROBLEMS[catId] || [];
+  const cat = CATEGORIES.find(c=>c.id===catId);
+  const solvedCnt = probs.filter(p=>solved.has(probId(catId,p))).length;
+  const pct = probs.length ? solvedCnt/probs.length*100 : 0;
+  const statEl = document.getElementById('cat-stat-'+catId);
+  const barEl  = document.getElementById('cat-bar-'+catId);
+  if(statEl) statEl.textContent = `${solvedCnt}/${probs.length}`;
+  if(barEl)  barEl.style.width = pct+'%';
+}
+
+function setDiff(diff, btn) {
+  diffFilter = diff;
+  document.querySelectorAll('.pill').forEach(b => {
+    b.className = 'pill';
+  });
+  btn.className = `pill active-${diff}`;
+  applyFilters();
+}
+
+function applyFilters() {
+  searchQuery = document.getElementById('searchInput').value.toLowerCase();
+  let anyVisible = false;
+
+  document.querySelectorAll('.problem-row').forEach(row => {
+    const diff = row.dataset.diff;
+    const name = row.dataset.name;
+    const isSolved = row.classList.contains('solved');
+
+    const matchDiff = diffFilter==='all'
+      || diffFilter===diff
+      || (diffFilter==='done' && isSolved)
+      || (diffFilter==='todo' && !isSolved);
+    const matchSearch = !searchQuery || name.includes(searchQuery);
+
+    const show = matchDiff && matchSearch;
+    row.style.display = show ? '' : 'none';
+    if(show) anyVisible = true;
+  });
+
+  // Hide empty category blocks
+  CATEGORIES.forEach(cat => {
+    const block = document.getElementById('cat-block-'+cat.id);
+    const list = document.getElementById('cat-list-'+cat.id);
+    if(!block || !list) return;
+    const visibleRows = [...list.querySelectorAll('.problem-row')].filter(r=>r.style.display!=='none');
+    block.style.display = visibleRows.length ? '' : 'none';
+  });
+
+  document.getElementById('noResults').style.display = anyVisible ? 'none' : 'block';
+}
+
+function resetAll() {
+  if(!confirm('Reset all progress? This cannot be undone.')) return;
+  solved.clear();
+  persist();
+  document.querySelectorAll('.problem-row').forEach(r => {
+    r.classList.remove('solved');
+    const id = r.id.replace('row-','');
+    const chk = document.getElementById('chk-'+id);
+    if(chk) chk.textContent='';
+  });
+  CATEGORIES.forEach(cat => updateCatHeader(cat.id));
+  updateDonut();
+  updateGlobalProgress();
+  buildStats();
+  buildSidebar();
+  showToast('Progress reset');
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function probId(catId, p) {
+  return catId + '_' + p[2];
+}
+
+function findProbById(id) {
+  const [cat, ...rest] = id.split('_');
+  const slug = rest.join('_');
+  const probs = PROBLEMS[cat] || [];
+  return probs.find(p=>p[2]===slug);
+}
+
+function persist() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...solved]));
+}
+
+function updateDonut() {
+  const total = 150;
+  const done = solved.size;
+  const pct = done/total;
+  const circumference = 2 * Math.PI * 52; // 326.7
+  const offset = circumference * (1-pct);
+  document.getElementById('donutCircle').style.strokeDashoffset = offset;
+  document.getElementById('donutNum').textContent = done;
+
+  const allProbs = Object.values(PROBLEMS).flat();
+  const solvedE = [...solved].filter(id => { const p=findProbById(id); return p&&p[1]==='E'; }).length;
+  const solvedM = [...solved].filter(id => { const p=findProbById(id); return p&&p[1]==='M'; }).length;
+  const solvedH = [...solved].filter(id => { const p=findProbById(id); return p&&p[1]==='H'; }).length;
+  document.getElementById('legE').textContent = solvedE+'E';
+  document.getElementById('legM').textContent = solvedM+'M';
+  document.getElementById('legH').textContent = solvedH+'H';
+}
+
+function updateGlobalProgress() {
+  const done = solved.size;
+  document.getElementById('gpText').textContent = `${done} / 150`;
+  document.getElementById('gpFill').style.width = (done/150*100)+'%';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confetti');
+  const colors = ['#00e676','#4fc3f7','#ffcc02','#ff4060','#ce93d8'];
+  for(let i=0;i<12;i++){
+    const el = document.createElement('div');
+    el.className = 'conf';
+    el.style.cssText = `
+      left:${20+Math.random()*60}%;
+      top:-10px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-delay:${Math.random()*0.3}s;
+      animation-duration:${0.9+Math.random()*0.5}s;
+      transform:rotate(${Math.random()*360}deg);
+    `;
+    container.appendChild(el);
+    setTimeout(()=>el.remove(), 1600);
+  }
+}
+
+// Scroll spy for sidebar
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const id = e.target.id.replace('cat-block-','');
+      document.querySelectorAll('.cat-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      const matching = [...document.querySelectorAll('.cat-item')].find(item => {
+        return item.onclick?.toString().includes(`'${id}'`);
+      });
+    }
+  });
+}, { threshold: 0.3 });
+
+init();
+document.querySelectorAll('.category-block').forEach(b => observer.observe(b));
+</script>
+</body>
+</html>

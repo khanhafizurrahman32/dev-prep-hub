@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riad's Dev Prep Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07080a;
+    --surface: #0e1014;
+    --card: #12151a;
+    --border: #1c2030;
+    --border2: #252a38;
+    --text: #9ba3b8;
+    --white: #eef1f8;
+    --dim: #4a5068;
+
+    --c1: #e8ff47;   /* yellow-green — algorithms */
+    --c2: #00cfff;   /* cyan — system design */
+    --c3: #ff5c5c;   /* red — java/spring */
+    --c4: #b06dff;   /* purple — database */
+    --c5: #ff8c42;   /* orange — frontend */
+    --c6: #3ddc84;   /* green — devops */
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: var(--c1);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: width 0.2s, height 0.2s, background 0.2s;
+    mix-blend-mode: difference;
+  }
+
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1px solid rgba(232,255,71,0.4);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.12s ease;
+  }
+
+  body:has(a:hover) .cursor { width: 18px; height: 18px; }
+  body:has(a:hover) .cursor-ring { width: 50px; height: 50px; opacity: 0; }
+
+  /* Noise overlay */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.35;
+  }
+
+  /* Top bar */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 40px;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(7,8,10,0.92);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+
+  .logo span { color: var(--c1); }
+
+  .topbar-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--c6);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* Hero */
+  .hero {
+    padding: 80px 40px 60px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    top: -20px; left: -10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(120px, 18vw, 220px);
+    color: rgba(255,255,255,0.02);
+    line-height: 1;
+    pointer-events: none;
+    letter-spacing: -5px;
+    white-space: nowrap;
+  }
+
+  .hero-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--c1);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .hero-tag::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--c1);
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 96px);
+    color: var(--white);
+    line-height: 0.95;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+  }
+
+  h1 em {
+    font-style: normal;
+    -webkit-text-stroke: 1px var(--c1);
+    color: transparent;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+    max-width: 540px;
+    margin-bottom: 40px;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    position: relative;
+  }
+
+  .stat-n {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 42px;
+    color: var(--white);
+    line-height: 1;
+  }
+
+  .stat-n span { color: var(--c1); }
+
+  .stat-l {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* Section */
+  .section {
+    padding: 0 40px 60px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--white);
+    letter-spacing: 2px;
+  }
+
+  .section-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  /* Cards grid */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .card {
+    background: var(--card);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    display: block;
+    transition: background 0.15s;
+    group: true;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-color, var(--c1));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .card:hover { background: #161b24; }
+  .card:hover::before { transform: scaleX(1); }
+
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .card-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-color, var(--dim));
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    line-height: 1.1;
+  }
+
+  .card-desc {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .card-meta {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  .card-arrow {
+    font-size: 16px;
+    color: var(--accent-color, var(--dim));
+    transition: transform 0.2s;
+  }
+
+  .card:hover .card-arrow { transform: translate(4px, -4px); }
+
+  /* Status badges */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .badge-ready {
+    background: rgba(61,220,132,0.1);
+    color: var(--c6);
+    border: 1px solid rgba(61,220,132,0.2);
+  }
+
+  .badge-soon {
+    background: rgba(255,140,66,0.1);
+    color: var(--c5);
+    border: 1px solid rgba(255,140,66,0.2);
+  }
+
+  .badge-wip {
+    background: rgba(0,207,255,0.1);
+    color: var(--c2);
+    border: 1px solid rgba(0,207,255,0.2);
+  }
+
+  /* Featured card - full width */
+  .card-featured {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: center;
+  }
+
+  @media (max-width: 600px) {
+    .card-featured { grid-template-columns: 1fr; }
+    .topbar { padding: 16px 20px; }
+    .hero { padding: 50px 20px 40px; }
+    .section { padding: 0 20px 40px; }
+  }
+
+  .card-featured .card-title { font-size: 36px; }
+
+  .card-featured-right {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mini-stat {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+  }
+
+  .mini-stat-n {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--white);
+    min-width: 36px;
+  }
+
+  .mini-stat-l {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  /* Timeline / roadmap */
+  .roadmap {
+    padding: 40px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  .roadmap-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--white);
+    letter-spacing: 2px;
+    margin-bottom: 32px;
+  }
+
+  .roadmap-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    max-width: 700px;
+  }
+
+  .roadmap-items::before {
+    content: '';
+    position: absolute;
+    left: 15px; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border2);
+  }
+
+  .roadmap-item {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    padding: 0 0 28px 0;
+    position: relative;
+  }
+
+  .roadmap-dot {
+    width: 31px; height: 31px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .roadmap-dot.done {
+    background: rgba(61,220,132,0.15);
+    border: 1px solid var(--c6);
+    color: var(--c6);
+  }
+
+  .roadmap-dot.active {
+    background: rgba(232,255,71,0.15);
+    border: 1px solid var(--c1);
+    color: var(--c1);
+    box-shadow: 0 0 16px rgba(232,255,71,0.2);
+    animation: glowPulse 2s infinite;
+  }
+
+  .roadmap-dot.upcoming {
+    background: transparent;
+    border: 1px solid var(--border2);
+    color: var(--dim);
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 10px rgba(232,255,71,0.2); }
+    50%       { box-shadow: 0 0 24px rgba(232,255,71,0.4); }
+  }
+
+  .roadmap-content { padding-top: 4px; }
+
+  .roadmap-phase {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+
+  .roadmap-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .roadmap-detail {
+    font-size: 12px;
+    color: var(--dim);
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: gap;
+  }
+
+  .footer-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--dim);
+    letter-spacing: 3px;
+  }
+
+  .footer-note {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+  }
+
+  /* Animations */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in:nth-child(1) { animation-delay: 0.05s; }
+  .fade-in:nth-child(2) { animation-delay: 0.1s; }
+  .fade-in:nth-child(3) { animation-delay: 0.15s; }
+  .fade-in:nth-child(4) { animation-delay: 0.2s; }
+  .fade-in:nth-child(5) { animation-delay: 0.25s; }
+  .fade-in:nth-child(6) { animation-delay: 0.3s; }
+
+  /* how to use box */
+  .how-box {
+    margin: 0 40px 40px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--c1);
+    padding: 24px 28px;
+    background: rgba(232,255,71,0.03);
+  }
+
+  .how-box h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--c1);
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+
+  .how-steps {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .how-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--c1);
+    line-height: 1;
+    opacity: 0.5;
+  }
+
+  .step-text {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    padding-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- Top bar -->
+<nav class="topbar">
+  <div class="logo">RIAD<span>.</span>DEV</div>
+  <div class="topbar-meta">
+    <span class="status-dot"></span>PREP HUB · ACTIVE
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg-text">PREP</div>
+  <div class="hero-tag">developer interview prep</div>
+  <h1>ALL YOUR<br>PREP TOOLS<br><em>ONE PLACE</em></h1>
+  <p class="hero-desc">
+    A personal dashboard for your Java backend, system design, algorithms,
+    and frontend prep. Drop new HTML tools here as you build them.
+  </p>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-n">6<span>+</span></div>
+      <div class="stat-l">Topic Areas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">30</div>
+      <div class="stat-l">System Design</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n">150</div>
+      <div class="stat-l">NeetCode Target</div>
+    </div>
+  </div>
+</section>
+
+<!-- How to use -->
+<div class="how-box">
+  <h3>// How to use this hub</h3>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="step-num">1</div>
+      <div class="step-text">Put all your prep HTML files<br>in the same folder as this file</div>
+    </div>
+    <div class="how-step">
+      <div class="step-num">2</div>
+      <div class="step-text">Update the <code style="color:var(--c1);font-family:Space Mono,monospace;font-size:11px">href</code> links below<br>to match your file names</div>
+    </div>
+    <div class="how-step">
+      <div class="step-num">3</div>
+      <div class="step-text">Push folder to GitHub,<br>deploy free on Vercel</div>
+    </div>
+    <div class="how-step">
+      <div class="step-num">4</div>
+      <div class="step-text">Access from any device —<br>phone, laptop, anywhere</div>
+    </div>
+  </div>
+</div>
+
+<!-- System Design -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">System Design</div>
+    <div class="section-count">// 02 tools</div>
+  </div>
+  <div class="cards">
+
+    <a class="card card-featured fade-in" href="system-design-tutorial.html" style="--accent-color: var(--c2)">
+      <div>
+        <div class="card-label">Featured · System Design</div>
+        <div class="card-title">30 Core Concepts Interactive Tutorial</div>
+        <div class="card-desc">
+          Every concept from APIs to Geohashing. Click any card to get a full
+          breakdown — what it is, why it matters, code examples,
+          and the interview angle. Filter by category, search by keyword.
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-ready">● Ready</span>
+          <span class="card-arrow" style="color:var(--c2)">↗</span>
+        </div>
+      </div>
+      <div class="card-featured-right">
+        <div class="mini-stat">
+          <div class="mini-stat-n" style="color:var(--c2)">30</div>
+          <div class="mini-stat-l">Concepts covered<br>APIs · DB · Cache · Architecture</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-n" style="color:var(--c2)">8</div>
+          <div class="mini-stat-l">Categories<br>Filterable + Searchable</div>
+        </div>
+        <div class="mini-stat">
+          <div class="mini-stat-n" style="color:var(--c2)">30</div>
+          <div class="mini-stat-l">Blog links included<br>Deep-dive reading</div>
+        </div>
+      </div>
+    </a>
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c2); opacity:0.5; pointer-events:none">
+      <span class="card-icon">🏗️</span>
+      <div class="card-label">System Design</div>
+      <div class="card-title">Case Study Flashcards</div>
+      <div class="card-desc">Design Twitter, Uber, WhatsApp, YouTube. Step-by-step walkthroughs with architecture diagrams.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- Algorithms -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">Algorithms & DSA</div>
+    <div class="section-count">// NeetCode 150</div>
+  </div>
+  <div class="cards">
+
+    <a class="card fade-in" href="neetcode-flashcards.html" style="--accent-color: var(--c1)">
+      <span class="card-icon">🧠</span>
+      <div class="card-label">Algorithms · Patterns</div>
+      <div class="card-title">NeetCode Pattern Flashcards</div>
+      <div class="card-desc">40 cards across 10 patterns. Flip to reveal answer, code template, complexity & interview angle. Know It / Study More tracking.</div>
+      <div class="card-footer">
+        <span class="badge badge-ready">● Ready</span>
+        <span class="card-arrow" style="color:var(--c1)">↗</span>
+      </div>
+    </a>
+
+    <a class="card fade-in" href="neetcode-tracker.html" style="--accent-color: var(--c1)">
+      <span class="card-icon">📊</span>
+      <div class="card-label">Algorithms · Tracker</div>
+      <div class="card-title">NeetCode 150 Progress Tracker</div>
+      <div class="card-desc">Track all 150 problems across 18 categories. Mark solved, filter by difficulty, see your % per pattern. Progress saved locally.</div>
+      <div class="card-footer">
+        <span class="badge badge-ready">● Ready</span>
+        <span class="card-arrow" style="color:var(--c1)">↗</span>
+      </div>
+    </a>
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c1); opacity:0.5; pointer-events:none">
+      <span class="card-icon">⏱️</span>
+      <div class="card-label">Algorithms · Practice</div>
+      <div class="card-title">Timed Problem Simulator</div>
+      <div class="card-desc">25-minute timer, pseudocode scratchpad, H.R.C. checklist. Simulate real interview pressure.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- Java / Spring -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">Java & Spring Boot</div>
+    <div class="section-count">// Core stack</div>
+  </div>
+  <div class="cards">
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c3); opacity:0.5; pointer-events:none">
+      <span class="card-icon">☕</span>
+      <div class="card-label">Java · Concurrency</div>
+      <div class="card-title">Java Concurrency Cheatsheet</div>
+      <div class="card-desc">synchronized, volatile, CompletableFuture, thread pools, ReentrantLock. Interview-focused deep dive.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c3); opacity:0.5; pointer-events:none">
+      <span class="card-icon">🌱</span>
+      <div class="card-label">Spring Boot</div>
+      <div class="card-title">Spring Boot Interview Q&A</div>
+      <div class="card-desc">IoC, AOP, Bean lifecycle, @Transactional pitfalls, Security config, JPA N+1 — everything they ask.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c3); opacity:0.5; pointer-events:none">
+      <span class="card-icon">⚡</span>
+      <div class="card-label">Spring · Reactive</div>
+      <div class="card-title">WebFlux / Reactor Visualizer</div>
+      <div class="card-desc">Interactive Flux/Mono marble diagrams. Visualize flatMap, zip, merge, and backpressure in real-time.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- Database -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">Databases & SQL</div>
+    <div class="section-count">// SQL Server · PostgreSQL</div>
+  </div>
+  <div class="cards">
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c4); opacity:0.5; pointer-events:none">
+      <span class="card-icon">🗃️</span>
+      <div class="card-label">SQL · Reference</div>
+      <div class="card-title">SQL Query Reference & Playground</div>
+      <div class="card-desc">Window functions, CTEs, GROUPING SETS, execution plans. T-SQL vs ANSI differences highlighted.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c4); opacity:0.5; pointer-events:none">
+      <span class="card-icon">🔍</span>
+      <div class="card-label">Database · Internals</div>
+      <div class="card-title">Index & Query Plan Explainer</div>
+      <div class="card-desc">B-tree vs hash, covering indexes, query optimizer hints, EXPLAIN ANALYZE output reader.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- DevOps / Cloud -->
+<section class="section">
+  <div class="section-header">
+    <div class="section-title">DevOps & Cloud</div>
+    <div class="section-count">// Azure · Docker · CI</div>
+  </div>
+  <div class="cards">
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c6); opacity:0.5; pointer-events:none">
+      <span class="card-icon">🐳</span>
+      <div class="card-label">DevOps · Containers</div>
+      <div class="card-title">Docker & K8s Quick Reference</div>
+      <div class="card-desc">Essential commands, Dockerfile patterns, pod/deployment/service configs, resource limits.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+    <a class="card fade-in" href="#" style="--accent-color: var(--c6); opacity:0.5; pointer-events:none">
+      <span class="card-icon">☁️</span>
+      <div class="card-label">Cloud · Azure</div>
+      <div class="card-title">Azure Services Cheatsheet</div>
+      <div class="card-desc">AKS, Azure SQL, Service Bus, App Service, Key Vault, APIM — mapped to AWS equivalents.</div>
+      <div class="card-footer">
+        <span class="badge badge-soon">Coming Soon</span>
+        <span class="card-arrow">↗</span>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- Roadmap -->
+<div class="roadmap">
+  <div class="roadmap-title">// BUILD ROADMAP</div>
+  <div class="roadmap-items">
+
+    <div class="roadmap-item">
+      <div class="roadmap-dot done">✓</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 1 · Complete</div>
+        <div class="roadmap-name">System Design Tutorial</div>
+        <div class="roadmap-detail">30 concepts · interactive · searchable</div>
+      </div>
+    </div>
+
+    <div class="roadmap-item">
+      <div class="roadmap-dot active">→</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 2 · Now</div>
+        <div class="roadmap-name">Hub Setup + Vercel Deploy</div>
+        <div class="roadmap-detail">Put all files in one folder → push to GitHub → vercel deploy</div>
+      </div>
+    </div>
+
+    <div class="roadmap-item">
+      <div class="roadmap-dot upcoming">3</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 3 · Next</div>
+        <div class="roadmap-name">NeetCode Pattern Cards</div>
+        <div class="roadmap-detail">Sliding Window, Two Pointers, Trees, DP — with H.R.C. framework</div>
+      </div>
+    </div>
+
+    <div class="roadmap-item">
+      <div class="roadmap-dot upcoming">4</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 4</div>
+        <div class="roadmap-name">Spring Boot Q&A Flashcards</div>
+        <div class="roadmap-detail">IoC, AOP, Security, Transactions, JPA</div>
+      </div>
+    </div>
+
+    <div class="roadmap-item">
+      <div class="roadmap-dot upcoming">5</div>
+      <div class="roadmap-content">
+        <div class="roadmap-phase">Phase 5</div>
+        <div class="roadmap-name">System Design Case Studies</div>
+        <div class="roadmap-detail">Twitter, Uber, WhatsApp — full walkthroughs</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">RIAD.DEV</div>
+  <div class="footer-note">// personal prep hub · built with claude · 2026</div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top  = my + 'px';
+  });
+
+  (function animateRing() {
+    rx += (mx - rx) * 0.15;
+    ry += (my - ry) * 0.15;
+    ring.style.left = rx + 'px';
+    ring.style.top  = ry + 'px';
+    requestAnimationFrame(animateRing);
+  })();
+
+  // Intersection observer for scroll-reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.card').forEach(c => observer.observe(c));
+
+  // Update "today" in footer
+  const d = new Date();
+  document.querySelector('.topbar-meta').innerHTML =
+    `<span class="status-dot"></span>PREP HUB · ${d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase()}`;
+</script>
+</body>
+</html>

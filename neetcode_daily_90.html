@@ -8,8 +8,9 @@
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;600;700&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
   :root{--bg:#0d0f14;--surface:#13161e;--card:#1a1e2a;--border:#252a38;--accent:#4ade80;--accent2:#38bdf8;--accent3:#f472b6;--warn:#fb923c;--text:#e2e8f0;--muted:#64748b}
-  html,body{height:100%;background:var(--bg);font-family:'Sora',sans-serif;color:var(--text);overflow-x:hidden}
-  body{display:flex;flex-direction:column;min-height:100vh;padding:12px;gap:10px}
+  html{background:var(--bg);height:100%}
+  body{background:var(--bg);font-family:'Sora',sans-serif;color:var(--text);overflow-x:hidden}
+  body{display:flex;flex-direction:column;min-height:100vh;padding:12px;gap:10px;max-width:560px;margin:0 auto;width:100%}
   .header{display:flex;align-items:center;justify-content:space-between}
   .hl{display:flex;align-items:center;gap:10px}
   .logo{width:34px;height:34px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:14px;color:#000}
@@ -109,6 +110,83 @@
   .cbtn.solid.sel,.cbtn.solid:hover{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.5);box-shadow:0 0 12px rgba(74,222,128,.15)}
   /* streak badge shows solid count */
   .streak{display:flex;align-items:center;gap:5px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:20px;padding:5px 10px;font-size:12px;font-weight:600;color:#4ade80}
+
+  /* ── Mobile responsive ── */
+  @media (max-width:480px){
+    body{padding:8px;gap:8px}
+
+    /* Header: tighter */
+    .ht{font-size:13px}
+    .hs{font-size:10px}
+    .logo{width:30px;height:30px;font-size:12px;border-radius:8px}
+    .streak{padding:4px 8px;font-size:11px}
+
+    /* Progress row */
+    .prow{gap:6px}
+    .plbl{font-size:10px}
+    .pcnt{font-size:10px}
+
+    /* Filter buttons: smaller touch targets but visible */
+    .filters{gap:4px}
+    .fb{padding:8px 2px;font-size:10px;border-radius:7px}
+
+    /* Card */
+    .card{border-radius:14px}
+    .ch{padding:11px 11px 9px;gap:7px}
+    .title{font-size:14px}
+    .cat{font-size:9px;padding:2px 7px}
+    .diff{font-size:10px;padding:2px 8px}
+
+    /* Description */
+    .desc{font-size:11px;padding:9px 11px}
+
+    /* Example box: keep horizontal but tighter */
+    .exbox{gap:6px;margin:0 11px 8px;padding:9px 10px}
+    .exval{font-size:10px}
+    .exarrow{font-size:11px;padding-top:12px}
+
+    /* Tabs */
+    .tab{padding:8px 4px;font-size:10px}
+
+    /* Tab content */
+    .tc{padding:10px 11px}
+
+    /* Takeaway items */
+    .tnum{width:19px;height:19px;min-width:19px;font-size:9px}
+    .ttxt{font-size:11px}
+    .ptag{font-size:9px;padding:2px 6px}
+
+    /* Hint / Say / Mistake boxes */
+    .hintbtn{font-size:10px;padding:8px}
+    .saybox,.mistakebox{padding:9px 10px}
+    .saytxt,.mistagettxt{font-size:11px}
+    .saylbl,.mistakelbl,.rellbl,.exlbl{font-size:8px}
+
+    /* Code block */
+    .codeblock{border-radius:8px}
+    pre{padding:9px;font-size:10px;line-height:1.6}
+    .codehdr{padding:6px 10px}
+    .lang{font-size:9px}
+    .cpybtn{font-size:9px;padding:2px 6px}
+
+    /* Complexity row */
+    .cxrow{gap:5px;margin-top:9px}
+    .cxbox{padding:7px 6px;border-radius:7px}
+    .cxlbl{font-size:9px}
+    .cxval{font-size:12px}
+
+    /* Confidence buttons */
+    .conf-row{gap:5px}
+    .cbtn{padding:10px 2px;font-size:10px;border-radius:9px}
+
+    /* Action buttons */
+    .actions{gap:6px}
+    .btnnext{padding:13px 10px;font-size:13px;border-radius:11px}
+    .btnlc{padding:13px 12px;font-size:11px;border-radius:11px}
+  }
+
+  /* Ensure code block never overflows card */
+  pre{max-width:100%;word-break:break-all;white-space:pre-wrap}
 </style>
 </head>
 <body>
